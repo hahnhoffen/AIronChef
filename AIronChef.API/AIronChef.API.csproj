@@ -8,10 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Documentation\Swagger\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Handlers\" />
   </ItemGroup>
 
   <ItemGroup>
