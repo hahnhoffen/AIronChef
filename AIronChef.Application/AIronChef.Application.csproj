@@ -11,18 +11,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Helpers\" />
     <Folder Include="Common\Exceptions\" />
+    <Folder Include="Common\Helpers\" />
     <Folder Include="Common\Mapping\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Users\Commands\DeleteUser\" />
-    <Folder Include="Users\Commands\UpdateUser\" />
-    <Folder Include="Users\Queries\GetAllUsers\" />
-    <Folder Include="Validators\" />
+    <Folder Include="Interfaces\NewFolder\" />
     <Folder Include="Recipes\Commands\GenerateRecipe\" />
     <Folder Include="Recipes\Queries\SearchRecipes\" />
     <Folder Include="Users\Commands\AddUser\" />
+    <Folder Include="Users\Commands\DeleteUser\" />
+    <Folder Include="Users\Commands\UpdateUser\" />
+    <Folder Include="Users\Queries\GetAllUsers\" />
     <Folder Include="Users\Queries\GetUser\" />
+    <Folder Include="Validators\" />
   </ItemGroup>
 
 </Project>

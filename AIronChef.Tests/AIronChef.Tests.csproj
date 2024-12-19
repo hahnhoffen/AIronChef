@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <Folder Include="IntegrationTests\" />
-    <Folder Include="UnitTests\ApplicationTests\" />
     <Folder Include="UnitTests\ApplicationTests\RecipieTests\" />
     <Folder Include="UnitTests\ApplicationTests\UsersTest\" />
     <Folder Include="UnitTests\DomainTests\" />
