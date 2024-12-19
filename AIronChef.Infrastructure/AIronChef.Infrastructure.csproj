@@ -11,4 +11,13 @@
     <ProjectReference Include="..\AIronChef.Domain\AIronChef.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Database\" />
+    <Folder Include="Configurations\" />
+    <Folder Include="Logging\" />
+    <Folder Include="Autentication\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
