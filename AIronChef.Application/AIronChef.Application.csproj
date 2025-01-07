@@ -15,7 +15,6 @@
     <Folder Include="Common\Helpers\" />
     <Folder Include="Common\Mapping\" />
     <Folder Include="Interfaces\NewFolder\" />
-    <Folder Include="Recipes\Commands\GenerateRecipe\" />
     <Folder Include="Recipes\Queries\SearchRecipes\" />
     <Folder Include="Users\Commands\AddUser\" />
     <Folder Include="Users\Commands\DeleteUser\" />
