@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Documentation\Swagger\" />
     <Folder Include="DTOs\" />
     <Folder Include="Handlers\" />
