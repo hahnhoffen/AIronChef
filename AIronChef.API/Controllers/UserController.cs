@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using AIronChef.Application.Users.Commands.AddUser;
+using AIronChef.Domain.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -16,18 +18,29 @@ namespace AIronChef.API.Controllers
         [Route("api/users")]
         public async Task<IActionResult> Register([FromBody, Required] User newUser)
         {
-            _logger.LogInformation("Adding new User {username}", newUser.UserName);
-            try
+            if (!ModelState.IsValid)
             {
-                var operationResult = await _mediator.Send(new AddUserCommand(newUser));
-                _logger.LogInformation("User {username} added successfully", operationResult.Data.UserName);
-                return Ok(operationResult.Data);
+                _logger.LogWarning("Invalid user data.");
+                return BadRequest(ModelState);
             }
 
+            _logger.LogInformation("Adding new user {username}", newUser.Name);
+            try
+            {
+                var result = await _mediator.Send(new AddUserCommand
+                {
+                    Name = newUser.Name,
+                    Email = newUser.Email,
+                    Password = newUser.PasswordHash
+                }) as User;
+
+                _logger.LogInformation("User {username} added successfully", result.Name);
+                return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, result);
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while adding new User");
-                return StatusCode(500, "An error occurred while adding new User.");
+                _logger.LogError(ex, "An error occurred while adding a new user.");
+                return StatusCode(500, "An error occurred while adding a new user.");
             }
         }
 
@@ -43,9 +56,15 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var operationResult = await _mediator.Send(new GetUserByIdQuery(id));
+                var operationResult = await _mediator.Send(new GetUserQuery(id));
+                if (operationResult == null)
+                {
+                    _logger.LogWarning("User not found");
+                    return NotFound("User not found.");
+                }
+
                 _logger.LogInformation("Successfully retrieved the user!");
-                return Ok(operationResult.Data);
+                return Ok(operationResult);
             }
 
             catch (Exception ex)
@@ -59,11 +78,11 @@ namespace AIronChef.API.Controllers
         [HttpPut("api/users/{id:guid}")]
         public async Task<IActionResult> UpdateUser([FromBody, Required] User user)
         {
-            _logger.LogInformation("Updating User {username}", user.UserName);
+            _logger.LogInformation("Updating User {username}", user.Name);
             try
             {
                 var operationResult = await _mediator.Send(new UpdateUserCommand(user));
-                _logger.LogInformation("User {username} updated successfully", operationResult.Data.UserName);
+                _logger.LogInformation("User {username} updated successfully", operationResult.Data.Name);
                 return Ok(operationResult.Data);
             }
             catch (Exception ex)
