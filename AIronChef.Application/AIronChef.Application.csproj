@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Folder Include="Common\Exceptions\" />
-    <Folder Include="Common\Helpers\" />
     <Folder Include="Common\Mapping\" />
     <Folder Include="Interfaces\NewFolder\" />
     <Folder Include="Recipes\Queries\SearchRecipes\" />
