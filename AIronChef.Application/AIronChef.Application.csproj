@@ -18,7 +18,6 @@
     <Folder Include="Users\Commands\DeleteUser\" />
     <Folder Include="Users\Commands\UpdateUser\" />
     <Folder Include="Users\Queries\GetAllUsers\" />
-    <Folder Include="Users\Queries\GetUser\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 
