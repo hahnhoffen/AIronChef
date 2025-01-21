@@ -31,7 +31,7 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var result = await _mediator.Send(new GenerateRecipeCommand
+                var result = await _mediator.Send(new GenerateRecipeCommandHandler
                 {
                     Ingredients = newRecipe.Ingredients
                 });
