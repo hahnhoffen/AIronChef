@@ -21,5 +21,6 @@ namespace AIronChef.Domain.Models
 
         // Hashed version of the user's password.
         public string PasswordHash { get; set; } = string.Empty;
+        public ICollection<Recipe> Recipes { get; set; }
     }
 }

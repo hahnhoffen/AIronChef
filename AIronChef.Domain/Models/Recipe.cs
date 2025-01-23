@@ -22,5 +22,9 @@ namespace AIronChef.Domain.Models
 
         // The timestamp when the recipe was created.
         public DateTime CreatedAt { get; set; }
+
+        // Navigation properties
+        public int UserId { get; set; }
+        public User User { get; set; }
     }
 }
