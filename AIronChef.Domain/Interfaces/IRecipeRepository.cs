@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AIronChef.Application.Interfaces
+namespace AIronChef.Domain.Interfaces
 {
     public interface IRecipeRepository
     {
