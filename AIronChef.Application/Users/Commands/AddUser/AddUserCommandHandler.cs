@@ -31,24 +31,18 @@ namespace AIronChef.Application.Users.Commands.AddUser
                 return OperationResult<User>.Failure("The Email already exist");
             }
 
-            try
+            var salt = PasswordHasher.GenerateSalt();
+            var passwordHash = PasswordHasher.HashPassword(command.Password, salt);
+            var userDTO = new User
             {
-                var salt = PasswordHasher.GenerateSalt();
-                var passwordHash = PasswordHasher.HashPassword(command.Password, salt);
-                var userDTO = new User
-                {
-                    Name = command.Name,
-                    Email = command.Email,
-                    PasswordHash = passwordHash,
-                    PasswordSalt = salt
-                };
-                User user = await _repository.AddUserAsync(userDTO);
-                return OperationResult<User>.Successfull(user);
-            }
-            catch (Exception ex)
-            {
-                return OperationResult<User>.Failure(ex.Message);
-            }
+                Name = command.Name,
+                Email = command.Email,
+                PasswordHash = passwordHash,
+                PasswordSalt = salt
+            };
+            // The caller should handle exceptions of unforeseen errors.
+            User user = await _repository.AddUserAsync(userDTO);
+            return OperationResult<User>.Successfull(user);
         }
     }
 }
