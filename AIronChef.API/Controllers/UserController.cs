@@ -32,10 +32,19 @@ namespace AIronChef.API.Controllers
                     Name = newUser.Name,
                     Email = newUser.Email,
                     Password = newUser.PasswordHash
-                }) as User;
+                });
 
-                _logger.LogInformation("User {username} added successfully", result.Name);
-                return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, result);
+                if (result.Success)
+                {
+                    var user = result.Data;
+                    _logger.LogInformation("User {username} added successfully with id {id}", user.Name, user.Id);
+                    return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, result);
+                }
+                else
+                {
+                    _logger.LogWarning("New user OperationResult failure: {message}", result.ErrorMessage);
+                    return BadRequest(result.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {

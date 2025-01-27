@@ -21,5 +21,8 @@ namespace AIronChef.Domain.Models
 
         // Hashed version of the user's password.
         public string PasswordHash { get; set; } = string.Empty;
+
+        // Salt used to hash the password so it becomes unique even if the same pasword is used by 2 different people or reused by the same person.
+        public string PasswordSalt { get; set; } = string.Empty;
     }
 }
