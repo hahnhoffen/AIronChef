@@ -11,8 +11,8 @@ namespace AIronChef.Domain.Interfaces
     {
         Task<Recipe> GetRecipeByIdAsync(int id);
         Task<IEnumerable<Recipe>> GetAllRecipesAsync();
-        Task AddRecipeAsync(Recipe recipe);
-        Task UpdateRecipeAsync(Recipe recipe);
-        Task DeleteRecipeAsync(int id);
+        Task<Recipe> AddRecipeAsync(Recipe recipe);
+        Task<Recipe> UpdateRecipeAsync(Recipe recipe);
+        Task<Recipe> DeleteRecipeAsync(int id);
     }
 }
