@@ -1,10 +1,12 @@
 ﻿using AIronChef.Application.Users.Commands.AddUser;
+using AIronChef.Application.Users.Commands.UpdateUser;
 using AIronChef.Application.Users.Commands.DeleteUser;
 using AIronChef.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Xml.Linq;
 
 namespace AIronChef.API.Controllers
 {
@@ -14,6 +16,11 @@ namespace AIronChef.API.Controllers
         private readonly IMediator _mediator;
         private readonly ILogger<UserController> _logger;
 
+        public UserController(IMediator mediator, ILogger<UserController> logger)
+        {
+            _mediator = mediator;
+            _logger = logger;
+        }
 
         [HttpPost]
         [Route("api/users")]
@@ -91,9 +98,27 @@ namespace AIronChef.API.Controllers
             _logger.LogInformation("Updating User {username}", user.Name);
             try
             {
-                var operationResult = await _mediator.Send(new UpdateUserCommand(user));
-                _logger.LogInformation("User {username} updated successfully", operationResult.Data.Name);
-                return Ok(operationResult.Data);
+                var operationResult = await _mediator.Send(new UpdateUserCommand
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                });
+                if (operationResult == null)
+                {
+                    _logger.LogWarning("User not found");
+                    return NotFound("User not found.");
+                }
+                if (operationResult.Success)
+                {
+                    _logger.LogInformation("User {username} updated successfully", operationResult.Data.Name);
+                    return Ok(operationResult.Data);
+                }
+                else
+                {
+                    _logger.LogWarning("Update user failure: {message}", operationResult.ErrorMessage);
+                    return BadRequest(operationResult.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
