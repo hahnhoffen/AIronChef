@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using AIronChef.API.Extensions;
 using AIronChef.Infrastructure.Logging;
+using AIronChef.Infrastructure;
 
 namespace AIronChef.API
 {
@@ -19,12 +20,14 @@ namespace AIronChef.API
                 throw new InvalidOperationException("Azure SQL connection string is not set in environment variables.");
             }
 
+
+
             builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSingleton<LoggingService>();
 
-            builder.Services.AddSingleton(new SqlConnection(connectionString));
+            builder.Services.AddInfrastructure(connectionString);
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
