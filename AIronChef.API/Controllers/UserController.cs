@@ -1,9 +1,12 @@
 ﻿using AIronChef.Application.Users.Commands.AddUser;
+using AIronChef.Application.Users.Commands.UpdateUser;
+using AIronChef.Application.Users.Commands.DeleteUser;
 using AIronChef.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Xml.Linq;
 
 namespace AIronChef.API.Controllers
 {
@@ -13,6 +16,11 @@ namespace AIronChef.API.Controllers
         private readonly IMediator _mediator;
         private readonly ILogger<UserController> _logger;
 
+        public UserController(IMediator mediator, ILogger<UserController> logger)
+        {
+            _mediator = mediator;
+            _logger = logger;
+        }
 
         [HttpPost]
         [Route("api/users")]
@@ -32,10 +40,19 @@ namespace AIronChef.API.Controllers
                     Name = newUser.Name,
                     Email = newUser.Email,
                     Password = newUser.PasswordHash
-                }) as User;
+                });
 
-                _logger.LogInformation("User {username} added successfully", result.Name);
-                return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, result);
+                if (result.Success)
+                {
+                    var user = result.Data;
+                    _logger.LogInformation("User {username} added successfully with id {id}", user.Name, user.Id);
+                    return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, result);
+                }
+                else
+                {
+                    _logger.LogWarning("New user OperationResult failure: {message}", result.ErrorMessage);
+                    return BadRequest(result.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -81,9 +98,27 @@ namespace AIronChef.API.Controllers
             _logger.LogInformation("Updating User {username}", user.Name);
             try
             {
-                var operationResult = await _mediator.Send(new UpdateUserCommand(user));
-                _logger.LogInformation("User {username} updated successfully", operationResult.Data.Name);
-                return Ok(operationResult.Data);
+                var operationResult = await _mediator.Send(new UpdateUserCommand
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                });
+                if (operationResult == null)
+                {
+                    _logger.LogWarning("User not found");
+                    return NotFound("User not found.");
+                }
+                if (operationResult.Success)
+                {
+                    _logger.LogInformation("User {username} updated successfully", operationResult.Data.Name);
+                    return Ok(operationResult.Data);
+                }
+                else
+                {
+                    _logger.LogWarning("Update user failure: {message}", operationResult.ErrorMessage);
+                    return BadRequest(operationResult.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -93,19 +128,29 @@ namespace AIronChef.API.Controllers
         }
 
         [Authorize]
-        [HttpDelete("api/users/{id:guid}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        [HttpDelete("api/users/{id:int}")]
+        public async Task<IActionResult> DeleteUser(int id)
         {
+            /*
             if (id == Guid.Empty)
             {
                 _logger.LogWarning("Invalid input data");
                 return BadRequest("Invalid input data.");
             }
+            */
             try
             {
-                var operationResult = await _mediator.Send(new DeleteUserCommand(id));
-                _logger.LogInformation("User {id} deleted successfully", id);
-                return Ok(operationResult.Data);
+                var operationResult = await _mediator.Send(new DeleteUserCommand { Id = id });
+                if (operationResult.Success)
+                {
+                    _logger.LogInformation("User {id} deleted successfully", id);
+                    return Ok(operationResult.Data);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to delete user. OperationResult failure: {message}", operationResult.ErrorMessage);
+                    return BadRequest(operationResult.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {

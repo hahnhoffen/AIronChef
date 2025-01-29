@@ -15,13 +15,12 @@
     <Folder Include="Common\Mapping\" />
     <Folder Include="Interfaces\NewFolder\" />
     <Folder Include="Recipes\Queries\SearchRecipes\" />
-    <Folder Include="Users\Commands\DeleteUser\" />
-    <Folder Include="Users\Commands\UpdateUser\" />
     <Folder Include="Users\Queries\GetAllUsers\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
     <PackageReference Include="MediatR" Version="12.4.1" />
   </ItemGroup>
 
