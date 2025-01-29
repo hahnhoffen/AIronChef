@@ -1,5 +1,6 @@
 ﻿using AIronChef.Application.Users.Commands.AddUser;
 using AIronChef.Application.Users.Commands.UpdateUser;
+using AIronChef.Application.Users.Commands.DeleteUser;
 using AIronChef.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -127,19 +128,29 @@ namespace AIronChef.API.Controllers
         }
 
         [Authorize]
-        [HttpDelete("api/users/{id:guid}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        [HttpDelete("api/users/{id:int}")]
+        public async Task<IActionResult> DeleteUser(int id)
         {
+            /*
             if (id == Guid.Empty)
             {
                 _logger.LogWarning("Invalid input data");
                 return BadRequest("Invalid input data.");
             }
+            */
             try
             {
-                var operationResult = await _mediator.Send(new DeleteUserCommand(id));
-                _logger.LogInformation("User {id} deleted successfully", id);
-                return Ok(operationResult.Data);
+                var operationResult = await _mediator.Send(new DeleteUserCommand { Id = id });
+                if (operationResult.Success)
+                {
+                    _logger.LogInformation("User {id} deleted successfully", id);
+                    return Ok(operationResult.Data);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to delete user. OperationResult failure: {message}", operationResult.ErrorMessage);
+                    return BadRequest(operationResult.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
