@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AIronChef.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace AIronChef.Infrastructure.Logging
 {
-    public class LoggingService
+    public class LoggingService : ILoggingService
     {
         private readonly ILogger<LoggingService> _logger;
 
