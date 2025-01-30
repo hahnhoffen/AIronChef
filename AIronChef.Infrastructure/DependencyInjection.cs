@@ -10,7 +10,13 @@ namespace AIronChef.Infrastructure
         {
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, options =>
+                {
+                options.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+                });
             });
 
             return services;

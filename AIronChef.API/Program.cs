@@ -13,7 +13,7 @@ namespace AIronChef.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            string connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING");
+            string connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING")!;
 
             if (string.IsNullOrEmpty(connectionString))
             {
