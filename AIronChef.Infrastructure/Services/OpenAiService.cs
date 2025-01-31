@@ -4,10 +4,14 @@ using System.Text;
 using System.Text.Json;
 using Polly;
 using Polly.Retry;
+using AIronChef.Domain.Models;
+using AIronChef.Application.Recipes.Commands.GenerateRecipe;
+using AIronChef.Domain.Enums;
+using AIronChef.Application.Interfaces;
 
 namespace AIronChef.Infrastructure.Services
 {
-    public class OpenAiService
+    public class OpenAiService : IRecipeGenerationService
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<OpenAiService> _logger;
@@ -31,27 +35,27 @@ namespace AIronChef.Infrastructure.Services
         /// <param name="mealType">The type of meal (e.g., breakfast, lunch, dinner).</param>
         /// <param name="maxCookingTimeMinutes">The maximum cooking time in minutes.</param>
         /// <returns>The generated recipe as a string.</returns>
-        public async Task<string> SendPromptAsync(string[] ingredients, string mealType, int maxCookingTime)
+        public async Task<Recipe>? GenerateRecipeAsync(IEnumerable<string> ingredients, MealType mealType, int? maxCookingTime)
         {
             // Validate user input.
-            if (ingredients == null || ingredients.Length == 0)
+            if (ingredients == null || ingredients.Count() == 0)
             {
                 _logger.LogWarning("Invalid input: No ingredients provided.");
-                return "Please provide a list of ingredients for the recipe.";
+                return null!;
             }
-            if (string.IsNullOrWhiteSpace(mealType))
-            {
-                _logger.LogWarning("Invalid input: Meal type is missing.");
-                return "Please specify the type of meal (e.g., breakfast, lunch, or dinner).";
-            }
+            //if (string.IsNullOrWhiteSpace(mealType))
+            //{
+            //    _logger.LogWarning("Invalid input: Meal type is missing.");
+            //    return null!;
+            //}
             if (maxCookingTime <= 0)
             {
                 _logger.LogWarning("Invalid input: Max cooking time is not valid.");
-                return "Please provide a valid maximum cooking time in minutes.";
+                return null!;
             }
 
             // Define the system and user prompt
-            var systemPrompt = "You are a professional chef. Based on the given ingredients, meal type, and cooking time, create a recipe that fits the criteria. Respond with a detailed recipe and only a recipe, nothing more, nothing less.";
+            var systemPrompt = "You are a professional chef. Create a recipe based on the provided ingredients, meal type, and cooking time. Respond with a structured JSON object: { \"name\": \"Recipe Name\", \"description\": \"Description of the dish\", \"instructions\": \"List of instructions\", \"ingredients\": \"List of ingredients\" }";
             var userPrompt = $"Here are the details:\n" +
                              $"- Ingredients: {string.Join(", ", ingredients)}\n" +
                              $"- Meal Type: {mealType}\n" +
@@ -94,7 +98,10 @@ namespace AIronChef.Infrastructure.Services
                         {
                             new { role = "system", content = systemPrompt },
                             new { role = "user", content = userPrompt }
-                        }
+                        },
+                        temperature = 0,
+                        max_tokens = 300,
+                        response_format = new { type = "json_object" }
                     };
 
                     var requestContent = new StringContent(
@@ -111,27 +118,56 @@ namespace AIronChef.Infrastructure.Services
                     string responseString = await response.Content.ReadAsStringAsync();
                     var responseJson = JsonDocument.Parse(responseString);
 
-                    string parsedRecipe = responseJson
-                        .RootElement
+                    var rawContent = responseJson.RootElement
                         .GetProperty("choices")[0]
                         .GetProperty("message")
                         .GetProperty("content")
                         .GetString()!;
 
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                    };
+
+                    var recipeData = JsonSerializer.Deserialize<RecipeResponse>(rawContent, options);
+
+                    if (recipeData is null || string.IsNullOrWhiteSpace(recipeData.Name))
+                    {
+                        _logger.LogError("Failed to deserialize recipe response.");
+                        return null!;
+                    }
+
+                    var recipe = new Recipe
+                    {
+                        Name = recipeData.Name,
+                        Description = recipeData.Description,
+                        Ingredients = recipeData.Ingredients,
+                        Instructions = recipeData.Instructions,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
                     _logger.LogInformation("Recipe generated successfully.");
-                    return parsedRecipe;
+
+                    return recipe;
                 }
                 else
                 {
                     _logger.LogError("API call failed with status code {StatusCode}.", response.StatusCode);
-                    return $"Error: API call failed with status code {response.StatusCode}.";
+                    return null!;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "An unexpected error occurred during the API call.");
-                return "Error: An unexpected error occurred while generating the recipe.";
+                return null!;
             }
+        }
+        private class RecipeResponse
+        {
+            public string? Name { get; set; }
+            public string? Description { get; set; }
+            public ICollection<string> Ingredients { get; set; } = new List<string>();
+            public ICollection<string> Instructions { get; set; } = new List<string>();
         }
     }
 }
