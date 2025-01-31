@@ -21,7 +21,7 @@ public class GetUserHandler : IRequestHandler<GetUserQuery, OperationResult<User
     {
         _loggingService.LogInfo($"Fetching user with id: {request.Id}");
 
-        if (request.Id < 0)
+        if (request.Id <= 0)
         {
             _loggingService.LogWarning("Id must be greater than zero.");
             return OperationResult<User>.Failure("Id must be greater than zero.");
