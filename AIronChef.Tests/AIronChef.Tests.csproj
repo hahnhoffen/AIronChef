@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -29,9 +29,7 @@
 
   <ItemGroup>
     <Folder Include="IntegrationTests\" />
-    <Folder Include="UnitTests\ApplicationTests\" />
     <Folder Include="UnitTests\ApplicationTests\RecipeTests\" />
-    <Folder Include="UnitTests\ApplicationTests\UsersTest\" />
     <Folder Include="UnitTests\DomainTests\" />
   </ItemGroup>
 
