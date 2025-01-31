@@ -20,7 +20,7 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
             {
                 return OperationResult<User>.Failure("The new User's name can not be empty.");
             }
-            User existingUser = await _repository.GetUserByIdAsync(command.Id);
+            User existingUser = await _repository.GetByIdAsync(command.Id)!;
             if (existingUser == null)
             {
                 return OperationResult<User>.Failure("User not found");
@@ -44,7 +44,7 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
                 Name = command.Name,
                 Email = command.Email
             };
-            User updatedUser = await _repository.UpdateUserAsync(userDTO);
+            User updatedUser = await _repository.UpdateAsync(userDTO)!;
             return OperationResult<User>.Successfull(updatedUser);
         }
     }

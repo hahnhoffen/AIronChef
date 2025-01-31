@@ -1,8 +1,9 @@
+using AIronChef.Domain.Common;
 using System.ComponentModel.DataAnnotations;
 
 namespace AIronChef.Domain.Models
 {
-    public class Recipe
+    public class Recipe : IEntity
     {
         // Unique identifier for a recipe, Primary key, auto-incremented.
         public int Id { get; set; }

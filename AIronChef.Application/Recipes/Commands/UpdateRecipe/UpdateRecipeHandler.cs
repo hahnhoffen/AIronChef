@@ -12,9 +12,9 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
 {
     public class UpdateRecipeHandler : IRequestHandler<UpdateRecipeCommand, OperationResult<Recipe>>
     {
-        private readonly IRecipeRepository _recipeRepository;
+        private readonly IGenericRepository<Recipe> _recipeRepository;
 
-        public UpdateRecipeHandler(IRecipeRepository recipeRepository)
+        public UpdateRecipeHandler(IGenericRepository<Recipe> recipeRepository)
         {
             _recipeRepository = recipeRepository;
         }
@@ -26,7 +26,7 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
                 return OperationResult<Recipe>.Failure("Invalid command: Recipe ID is not valid.");
             }
 
-            var recipe = await _recipeRepository.GetRecipeByIdAsync(request.Id);
+            var recipe = await _recipeRepository.GetByIdAsync(request.Id)!;
 
             if (recipe == null)
             {
@@ -39,7 +39,7 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
 
             try
             {
-                await _recipeRepository.UpdateRecipeAsync(recipe);
+                await _recipeRepository.UpdateAsync(recipe)!;
                 return OperationResult<Recipe>.Successfull(recipe);
             }
             catch (Exception ex)

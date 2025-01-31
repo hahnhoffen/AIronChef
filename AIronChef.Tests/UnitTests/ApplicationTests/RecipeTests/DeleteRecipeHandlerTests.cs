@@ -1,27 +1,22 @@
-﻿using AIronChef.Application.Recipes.Commands.DeleteRecipe;
+﻿using AIronChef.Application.Interfaces;
+using AIronChef.Application.Recipes.Commands.DeleteRecipe;
 using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
-using AIronChef.Infrastructure.Logging;
 using FakeItEasy;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AIronChef.Tests.UnitTests.ApplicationTests.RecipeTests
 {
     [TestFixture]
     public class DeleteRecipeHandlerTests
     {
-        private IRecipeRepository _recipeRepository;
+        private IGenericRepository<Recipe> _recipeRepository;
         private ILoggingService _loggingService;
         private DeleteRecipeHandler _handler;
 
         [SetUp]
         public void SetUp()
         {
-            _recipeRepository = A.Fake<IRecipeRepository>();
+            _recipeRepository = A.Fake<IGenericRepository<Recipe>>();
             _loggingService = A.Fake<ILoggingService>(); 
             _handler = new DeleteRecipeHandler(_recipeRepository, _loggingService);
         }
@@ -30,7 +25,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.RecipeTests
         public async Task Handle_Should_ReturnSuccess_When_RecipeIsDeleted()
         {
             int recipeId = 1;
-            A.CallTo(() => _recipeRepository.DeleteRecipeAsync(recipeId)).Returns(Task.FromResult(new Recipe()));
+            A.CallTo(() => _recipeRepository.DeleteAsync(recipeId)).Returns(true);
 
             var command = new DeleteRecipeCommand { Id = recipeId };
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -44,8 +39,8 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.RecipeTests
         public async Task Handle_Should_ReturnFailure_When_RecipeDoesNotExist()
         {
             int recipeId = 1999; 
-            A.CallTo(() => _recipeRepository.DeleteRecipeAsync(recipeId))
-                .Returns(Task.FromResult((Recipe?)null)); 
+            A.CallTo(() => _recipeRepository.DeleteAsync(recipeId))
+                .Returns(false);
 
             var command = new DeleteRecipeCommand { Id = recipeId };
             var result = await _handler.Handle(command, CancellationToken.None);

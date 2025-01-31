@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AIronChef.Domain.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AIronChef.Domain.Models
 {
-    public class User
+    public class User : IEntity
     {
         // Primary key, auto-incremented by the database.
         [Key]

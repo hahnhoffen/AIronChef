@@ -2,6 +2,7 @@
 using AIronChef.Application.Users.Commands.DeleteUser;
 using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
+using FakeItEasy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task Handle_Should_ReturnSuccess_When_UserIsDeleted()
         {
             int userId = 1;
-            A.CallTo(() => _userRepository.DeleteUserAsync(userId))
+            A.CallTo(() => _userRepository.DeleteAsync(userId))
                 .Returns(Task.FromResult(true));
 
             var command = new DeleteUserCommand { Id = userId };
@@ -44,8 +45,8 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task Handle_Should_ReturnFailure_When_UserDoesNotExist()
         {
             int userId = 1999;
-            A.CallTo(() => _userRepository.DeleteUserAsync(userId))
-                .Returns(Task.FromResult<User>(null));
+            A.CallTo(() => _userRepository.DeleteAsync(userId))
+                .Returns(false);
 
             var command = new DeleteUserCommand { Id = userId };
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -70,7 +71,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task Handle_Should_ReturnFailure_When_DatabaseErrorOccurs()
         {
             int userId = 1;
-            A.CallTo(() => _userRepository.DeleteUserAsync(userId))
+            A.CallTo(() => _userRepository.DeleteAsync(userId))
                 .Throws(new Exception("Database error"));
 
             var command = new DeleteUserCommand { Id = userId };
