@@ -7,11 +7,13 @@ namespace AIronChef.Application.Recipes.Commands.GenerateRecipe;
 public class GenerateRecipeCommand : IRequest<OperationResult<Recipe>>
 {
     public string[] Ingredients { get; set; }
-    public int MaxCookingTime { get; set; }
-
-    public GenerateRecipeCommand(string[] ingredients, int maxCookingTime)
+    public int MaxCookingTimeMinutes { get; set; }
+    public Enum MealType { get; set; }
+    
+    public GenerateRecipeCommand(string[] ingredients, int maxCookingTimeMinutes, Enum mealType)
     {
         Ingredients = ingredients;
-        MaxCookingTime = maxCookingTime;
+        MaxCookingTimeMinutes = maxCookingTimeMinutes;
+        MealType = mealType;
     }
 }
