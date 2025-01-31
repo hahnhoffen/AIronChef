@@ -1,7 +1,4 @@
-
-using System.Data.SqlClient;
 using AIronChef.API.Extensions;
-using AIronChef.Infrastructure.Logging;
 using AIronChef.Infrastructure;
 
 namespace AIronChef.API
@@ -25,7 +22,6 @@ namespace AIronChef.API
             builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSingleton<LoggingService>();
 
             builder.Services.AddInfrastructure(connectionString);
             var app = builder.Build();

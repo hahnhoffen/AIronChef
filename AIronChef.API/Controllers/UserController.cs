@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
+using AIronChef.Application.Users.Queries.GetUser;
 
 namespace AIronChef.API.Controllers
 {
@@ -62,19 +63,13 @@ namespace AIronChef.API.Controllers
         }
 
 
-        [HttpGet("api/users/{id:guid}")]
-        public async Task<IActionResult> GetUserById(Guid id)
+        [HttpGet("api/users/{id:int}")]
+        public async Task<IActionResult> GetUserById(int id)
         {
-            if (id == Guid.Empty)
-            {
-                _logger.LogWarning("Invalid input data");
-                return BadRequest("Invalid input data.");
-            }
-
             try
             {
                 var operationResult = await _mediator.Send(new GetUserQuery(id));
-                if (operationResult == null)
+                if (!operationResult.Success)
                 {
                     _logger.LogWarning("User not found");
                     return NotFound("User not found.");
