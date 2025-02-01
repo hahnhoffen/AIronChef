@@ -13,6 +13,11 @@ namespace AIronChef.Application.Recipes.Commands.DeleteRecipe
     {
         public int Id { get; set; }
 
+        public DeleteRecipeCommand(int id)
+        {
+            Id = id;
+        }
+
         public bool IsValid()
         {
             return ValidationHelper.IsIdValid(Id);

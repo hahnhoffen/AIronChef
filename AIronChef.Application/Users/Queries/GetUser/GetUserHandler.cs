@@ -29,7 +29,7 @@ public class GetUserHandler : IRequestHandler<GetUserQuery, OperationResult<User
 
         try
         {
-            var user = await _userRepository.GetUserByIdAsync(request.Id);
+            var user = await _userRepository.GetByIdAsync(request.Id)!;
 
             if (user is null)
             {

@@ -1,4 +1,5 @@
 ﻿using AIronChef.Application.Interfaces;
+using AIronChef.Domain.Common;
 using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
 using AIronChef.Infrastructure.Database;

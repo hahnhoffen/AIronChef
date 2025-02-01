@@ -27,7 +27,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.RecipeTests
             int recipeId = 1;
             A.CallTo(() => _recipeRepository.DeleteAsync(recipeId)).Returns(true);
 
-            var command = new DeleteRecipeCommand { Id = recipeId };
+            var command = new DeleteRecipeCommand(recipeId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
@@ -42,7 +42,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.RecipeTests
             A.CallTo(() => _recipeRepository.DeleteAsync(recipeId))
                 .Returns(false);
 
-            var command = new DeleteRecipeCommand { Id = recipeId };
+            var command = new DeleteRecipeCommand(recipeId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.False);
@@ -54,7 +54,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.RecipeTests
         public async Task Handle_Should_ReturnFailure_When_IdIsInvalid()
         {
             int invalidId = -1; 
-            var command = new DeleteRecipeCommand {Id = invalidId};
+            var command = new DeleteRecipeCommand(invalidId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.False);

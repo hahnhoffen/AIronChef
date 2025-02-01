@@ -17,7 +17,8 @@ namespace AIronChef.API.Extensions
                     {
                         Name = "Team AIronChef",
                         Email = "TBA",
-                        Url = new Uri("TBA")
+                        //Url = new Uri("TBA")
+                        Url = new Uri("https://localhost:7254")
                     }
                 });
 

@@ -19,14 +19,14 @@ namespace AIronChef.Application.Users.Commands.DeleteUser
 
         public async Task<OperationResult<User>> Handle(DeleteUserCommand command, CancellationToken cancellationToken)
         {
-            User user = await _repository.DeleteUserAsync(command.Id);
-            if (user == null)
+            bool success = await _repository.DeleteAsync(command.Id);
+            if (!success)
             {
                 _loggingService.LogWarning("Invalid id");
                 return OperationResult<User>.Failure("Invalid id");
             }
             _loggingService.LogInfo("User deleted");
-            return OperationResult<User>.Successfull(user);
+            return OperationResult<User>.Successfull(null!);
         }
     }
 }
