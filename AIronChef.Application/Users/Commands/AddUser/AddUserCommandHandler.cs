@@ -41,7 +41,7 @@ namespace AIronChef.Application.Users.Commands.AddUser
                 PasswordSalt = salt
             };
             // The caller should handle exceptions of unforeseen errors.
-            User user = await _repository.AddUserAsync(userDTO);
+            User user = await _repository.AddAsync(userDTO);
             return OperationResult<User>.Successfull(user);
         }
     }

@@ -14,9 +14,9 @@ namespace AIronChef.Application.Recipes.Queries.GetRecipe
 {
     public class GetRecipeHandler : IRequestHandler<GetRecipeQuery, OperationResult<Recipe>>
     {
-        private readonly IRecipeRepository _recipeRepository;
+        private readonly IGenericRepository<Recipe> _recipeRepository;
         private readonly ILoggingService _loggingService;
-        public GetRecipeHandler(IRecipeRepository recipeRepository, ILoggingService loggingService)
+        public GetRecipeHandler(IGenericRepository<Recipe> recipeRepository, ILoggingService loggingService)
         {
             _recipeRepository = recipeRepository;
             _loggingService = loggingService;
@@ -34,7 +34,7 @@ namespace AIronChef.Application.Recipes.Queries.GetRecipe
 
             try
             {
-                var recipe = await _recipeRepository.GetRecipeByIdAsync(request.Id);
+                var recipe = await _recipeRepository.GetByIdAsync(request.Id)!;
 
                 if (recipe is null)
                 {
