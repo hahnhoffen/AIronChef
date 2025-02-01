@@ -45,7 +45,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task Handle_NonExistentUser_ReturnsFailure()
         {
             int invalidId = -1;
-            A.CallTo(() => _userRepository.GetByIdAsync(invalidId)).Returns(Task.FromResult<User>(null));
+            A.CallTo(() => _userRepository.GetByIdAsync(invalidId)).Returns(null);
 
             var query = new GetUserQuery(invalidId);
 
