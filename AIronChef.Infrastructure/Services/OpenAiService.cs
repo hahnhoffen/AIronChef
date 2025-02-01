@@ -5,7 +5,6 @@ using System.Text.Json;
 using Polly;
 using Polly.Retry;
 using AIronChef.Domain.Models;
-using AIronChef.Application.Recipes.Commands.GenerateRecipe;
 using AIronChef.Domain.Enums;
 using AIronChef.Application.Interfaces;
 
@@ -43,11 +42,7 @@ namespace AIronChef.Infrastructure.Services
                 _logger.LogWarning("Invalid input: No ingredients provided.");
                 return null!;
             }
-            //if (string.IsNullOrWhiteSpace(mealType))
-            //{
-            //    _logger.LogWarning("Invalid input: Meal type is missing.");
-            //    return null!;
-            //}
+
             if (maxCookingTime <= 0)
             {
                 _logger.LogWarning("Invalid input: Max cooking time is not valid.");

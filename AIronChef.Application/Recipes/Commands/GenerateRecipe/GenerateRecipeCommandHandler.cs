@@ -3,6 +3,7 @@ using AIronChef.Application.Common.Helpers;
 using AIronChef.Application.Interfaces;
 using AIronChef.Domain.Models;
 using Microsoft.Extensions.Logging;
+using AIronChef.Application.DTOs;
 
 namespace AIronChef.Application.Recipes.Commands.GenerateRecipe
 {
@@ -27,10 +28,10 @@ namespace AIronChef.Application.Recipes.Commands.GenerateRecipe
             try
             {
                 var generatedRecipe = await _recipeGenerationService.GenerateRecipeAsync(
-                    request.Ingredients,
+                    request.Ingredients!,
                     request.MealType,
                     request.MaxCookingTimeMinutes
-                );
+                )!;
 
                 if (generatedRecipe == null)
                 {

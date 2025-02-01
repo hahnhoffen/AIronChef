@@ -6,11 +6,12 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
 using AIronChef.Application.Users.Queries.GetUser;
 
 namespace AIronChef.API.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class UserController : Controller
     {
 
@@ -24,7 +25,6 @@ namespace AIronChef.API.Controllers
         }
 
         [HttpPost]
-        [Route("api/users")]
         public async Task<IActionResult> Register([FromBody, Required] User newUser)
         {
             if (!ModelState.IsValid)
@@ -63,7 +63,7 @@ namespace AIronChef.API.Controllers
         }
 
 
-        [HttpGet("api/users/{id:int}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
@@ -87,7 +87,7 @@ namespace AIronChef.API.Controllers
         }
 
         [Authorize]
-        [HttpPut("api/users/{id:guid}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateUser([FromBody, Required] User user)
         {
             _logger.LogInformation("Updating User {username}", user.Name);
@@ -123,7 +123,7 @@ namespace AIronChef.API.Controllers
         }
 
         [Authorize]
-        [HttpDelete("api/users/{id:int}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             /*

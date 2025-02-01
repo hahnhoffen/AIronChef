@@ -21,7 +21,15 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Ingredients are required.")]
-        public string Ingredients { get; set; }
+        public ICollection<string> Ingredients { get; set; }
+
+        public UpdateRecipeCommand(Recipe recipe)
+        {
+            Id = recipe.Id;
+            Name = recipe.Name!;
+            Description = recipe.Description!;
+            Ingredients = recipe.Ingredients!;
+        }
 
         public bool IsValid()
         {

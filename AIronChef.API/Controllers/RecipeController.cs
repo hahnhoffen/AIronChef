@@ -1,4 +1,7 @@
-﻿using AIronChef.Application.Recipes.Commands.GenerateRecipe;
+﻿using AIronChef.Application.DTOs;
+using AIronChef.Application.Recipes.Commands.DeleteRecipe;
+using AIronChef.Application.Recipes.Commands.GenerateRecipe;
+using AIronChef.Application.Recipes.Commands.UpdateRecipe;
 using AIronChef.Application.Recipes.Queries.GetRecipe;
 using AIronChef.Domain.Models;
 using MediatR;
@@ -7,6 +10,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AIronChef.API.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class RecipeController : Controller
     {
         private readonly IMediator _mediator;
@@ -19,7 +24,7 @@ namespace AIronChef.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddRecipe([FromBody, Required] Recipe newRecipe)
+        public async Task<IActionResult> AddRecipe([FromBody, Required] RecipeDto newRecipe)
         {
             if (!ModelState.IsValid)
             {
@@ -27,16 +32,17 @@ namespace AIronChef.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            _logger.LogInformation("Adding new recipe: {recipeName}", newRecipe.Name);
+            _logger.LogInformation("Adding new recipe: {recipeType}", newRecipe.MealType.ToString());
 
             try
             {
-                var result = await _mediator.Send(new GenerateRecipeCommandHandler
-                {
-                    Ingredients = newRecipe.Ingredients
-                });
+                //var result = await _mediator.Send(new GenerateRecipeCommandHandler
+                //{
+                //    Ingredients = newRecipe.Ingredients
+                //});
+                var result = await _mediator.Send(new GenerateRecipeCommand(newRecipe.Ingredients, newRecipe.MaxCookingTimeMinutes, newRecipe.MealType));
 
-                if (result is Recipe generatedRecipe)
+                if (result.Data is Recipe generatedRecipe)
                 {
                     return CreatedAtAction(nameof(GetRecipeById), new { id = generatedRecipe.Id }, generatedRecipe);
                 }
@@ -66,7 +72,7 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var result = await _mediator.Send(new GetRecipeQuery { Id = id });
+                var result = await _mediator.Send(new GetRecipeQuery(id));
                 if (result == null)
                 {
                     _logger.LogWarning("Recipe with ID {id} not found.", id);
@@ -126,7 +132,7 @@ namespace AIronChef.API.Controllers
             try
             {
                 var result = await _mediator.Send(new DeleteRecipeCommand(id));
-                if (!result)
+                if (!result.Success)
                 {
                     _logger.LogWarning("Recipe with ID {id} not found.", id);
                     return NotFound($"Recipe with ID {id} not found.");
