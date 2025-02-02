@@ -20,6 +20,18 @@ namespace AIronChef.API
                 throw new InvalidOperationException("Azure SQL connection string is not set in environment variables.");
             }
 
+            // Adding CORS policy to allow requests from frontend
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000") // Adjust if frontend is hosted elsewhere
+                          .AllowAnyMethod() // Allow all HTTP methods: GET, POST, PUT, DELETE, etc.
+                          .AllowAnyHeader() // Allow any headers (e.g., Authorization)
+                          .AllowCredentials(); // Allow cookies or credentials if needed
+                });
+            });
+
             builder.Services.AddHttpClient<OpenAiService>(client =>
             {
                 client.BaseAddress = new Uri("https://api.openai.com/v1/");
@@ -45,7 +57,7 @@ namespace AIronChef.API
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowFrontend");
             app.UseAuthorization();
 
 
