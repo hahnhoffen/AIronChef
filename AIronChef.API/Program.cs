@@ -21,6 +21,18 @@ namespace AIronChef.API
                 throw new InvalidOperationException("Azure SQL connection string is not set in environment variables.");
             }
 
+            // Adding CORS policy to allow requests from frontend
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")
+                          .AllowAnyMethod() 
+                          .AllowAnyHeader() 
+                          .AllowCredentials(); 
+                });
+            });
+
             builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddEndpointsApiExplorer();
@@ -43,7 +55,7 @@ namespace AIronChef.API
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowFrontend");
             app.UseAuthorization();
 
 
