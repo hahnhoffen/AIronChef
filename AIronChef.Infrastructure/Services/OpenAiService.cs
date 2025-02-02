@@ -37,7 +37,7 @@ namespace AIronChef.Infrastructure.Services
         public async Task<Recipe>? GenerateRecipeAsync(IEnumerable<string> ingredients, MealType mealType, int? maxCookingTime)
         {
             // Validate user input.
-            if (ingredients == null || ingredients.Count() == 0)
+            if (ingredients == null || !ingredients.Any())
             {
                 _logger.LogWarning("Invalid input: No ingredients provided.");
                 return null!;
@@ -57,7 +57,7 @@ namespace AIronChef.Infrastructure.Services
                              $"- Maximum Cooking Time: {maxCookingTime} minutes";
 
 
-            string url = "https://api.openai.com/v1/chat/completions";
+            string endpoint = "chat/completions";
 
             // Define Polly Retry Policy
             AsyncRetryPolicy<HttpResponseMessage> retryPolicy = Policy
@@ -104,7 +104,7 @@ namespace AIronChef.Infrastructure.Services
                         Encoding.UTF8,
                         "application/json");
 
-                    return await _httpClient.PostAsync(url, requestContent);
+                    return await _httpClient.PostAsync(endpoint, requestContent);
                 });
 
                 // Handle response
