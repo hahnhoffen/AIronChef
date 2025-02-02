@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using AIronChef.Application.Users.Queries.GetAllUsers;
 
 namespace AIronChef.API.Controllers
 {
@@ -146,6 +147,31 @@ namespace AIronChef.API.Controllers
             {
                 _logger.LogError(ex, "An error occurred while deleting the user.");
                 return StatusCode(500, "An error occurred while deleting the user.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            _logger.LogInformation("Fetching all users.");
+
+            try
+            {
+                var operationResult = await _mediator.Send(new GetAllUsersQuery());
+
+                if (!operationResult.Success)
+                {
+                    _logger.LogWarning("No users found.");
+                    return NotFound("No users found.");
+                }
+
+                _logger.LogInformation("Successfully retrieved all users.");
+                return Ok(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching users.");
+                return StatusCode(500, "An error occurred while processing your request.");
             }
         }
     }
