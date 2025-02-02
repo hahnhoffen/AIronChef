@@ -18,35 +18,41 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
         {
             if (string.IsNullOrWhiteSpace(command.Name))
             {
-                return OperationResult<User>.Failure("The new User's name can not be empty.");
+                return OperationResult<User>.Failure("The new User's name cannot be empty.");
             }
-            User existingUser = await _repository.GetByIdAsync(command.Id)!;
+
+            // Retrieve existing user from the repository
+            User existingUser = await _repository.GetByIdAsync(command.Id);
             if (existingUser == null)
             {
                 return OperationResult<User>.Failure("User not found");
             }
+
+            // If no changes are made, return success with the existing user
             if (existingUser.Email == command.Email && existingUser.Name == command.Name)
             {
-                // Requested value changes are the same as existing values, no need to change anything in the database.
                 return OperationResult<User>.Successfull(existingUser);
             }
+
+            // Check if the new email is unique before updating
             if (existingUser.Email != command.Email)
             {
-                bool uniqueNewEmail = await _repository.IsEmailUniqueAsync(command.Email);
-                if (!uniqueNewEmail)
+                bool isEmailUnique = await _repository.IsEmailUniqueAsync(command.Email);
+                if (!isEmailUnique)
                 {
                     return OperationResult<User>.Failure("New email is not unique");
                 }
             }
-            var userDTO = new User
-            {
-                Id = command.Id,
-                Name = command.Name,
-                Email = command.Email
-            };
-            User updatedUser = await _repository.UpdateAsync(userDTO)!;
+
+            // Update only the changed fields
+            existingUser.Name = command.Name;
+            existingUser.Email = command.Email;
+
+            User updatedUser = await _repository.UpdateAsync(existingUser);
+    
             return OperationResult<User>.Successfull(updatedUser);
         }
+
     }
 }
 
