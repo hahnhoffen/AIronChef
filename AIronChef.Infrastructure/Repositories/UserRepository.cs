@@ -16,6 +16,6 @@ public class UserRepository : GenericRepository<User>, IUserRepository
 
     public async Task<bool> IsEmailUniqueAsync(string email)
     {
-        return await _context.Users.AnyAsync(user => user.Email == email);
+        return !await _context.Users.AnyAsync(user => user.Email == email);
     }
 }
