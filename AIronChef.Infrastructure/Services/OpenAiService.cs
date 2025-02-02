@@ -25,6 +25,10 @@ namespace AIronChef.Infrastructure.Services
 
             if (string.IsNullOrEmpty(_apiKey))
                 throw new InvalidOperationException("No API key found");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            _httpClient.BaseAddress ??= new Uri("https://api.openai.com/v1/");
+            _logger.LogInformation("HttpClient BaseAddress: {BaseAddress}", _httpClient.BaseAddress);
         }
 
         /// <summary>
@@ -84,7 +88,7 @@ namespace AIronChef.Infrastructure.Services
                 // Execute the HTTP request with the retry policy
                 HttpResponseMessage response = await retryPolicy.ExecuteAsync(async () =>
                 {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+                    //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
 
                     var requestPayload = new
                     {
