@@ -32,6 +32,16 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
             }
             if (existingUser.Email != command.Email)
             {
+                // Check if new email contain anything
+                if (string.IsNullOrWhiteSpace(command.Email))
+                {
+                    return OperationResult<User>.Failure("The new Email is empty");
+                }
+                // Check if new email is valid
+                if (ValidationHelper.IsValidEmail(command.Email) == false)
+                {
+                    return OperationResult<User>.Failure("The new Email does not look valid");
+                }
                 bool uniqueNewEmail = await _repository.IsEmailUniqueAsync(command.Email);
                 if (!uniqueNewEmail)
                 {

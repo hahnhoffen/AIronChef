@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AIronChef.Application.Common.Helpers
 {
-    internal class PasswordHasher
+    public class PasswordHasher
     {
         public static string HashPassword(string password, string salt)
         {
