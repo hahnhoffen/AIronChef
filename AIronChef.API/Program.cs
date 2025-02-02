@@ -1,5 +1,6 @@
 using AIronChef.API.Extensions;
 using AIronChef.Application;
+using AIronChef.Application.Interfaces;
 using AIronChef.Infrastructure;
 using AIronChef.Infrastructure.Services;
 using System.Net.Http.Headers;
@@ -25,17 +26,11 @@ namespace AIronChef.API
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000") // Adjust if frontend is hosted elsewhere
-                          .AllowAnyMethod() // Allow all HTTP methods: GET, POST, PUT, DELETE, etc.
-                          .AllowAnyHeader() // Allow any headers (e.g., Authorization)
-                          .AllowCredentials(); // Allow cookies or credentials if needed
+                    policy.WithOrigins("http://localhost:3000")
+                          .AllowAnyMethod() 
+                          .AllowAnyHeader() 
+                          .AllowCredentials(); 
                 });
-            });
-
-            builder.Services.AddHttpClient<OpenAiService>(client =>
-            {
-                client.BaseAddress = new Uri("https://api.openai.com/v1/");
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
 
             builder.Services.AddControllers();
@@ -44,6 +39,9 @@ namespace AIronChef.API
 
             builder.Services.AddInfrastructure(connectionString);
             builder.Services.AddApplication();
+
+            builder.Services.AddHttpClient<IRecipeGenerationService, OpenAiService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
