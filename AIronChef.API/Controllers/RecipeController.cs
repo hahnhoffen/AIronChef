@@ -2,27 +2,24 @@
 using AIronChef.Application.Recipes.Commands.DeleteRecipe;
 using AIronChef.Application.Recipes.Commands.GenerateRecipe;
 using AIronChef.Application.Recipes.Commands.UpdateRecipe;
-using AIronChef.Application.Recipes.Queries.GetAllRecipes;
 using AIronChef.Application.Recipes.Queries.GetRecipe;
 using AIronChef.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using AIronChef.Domain.Interfaces;
+using AIronChef.Application.Recipes.Queries.GetAllRecipes;
 
 namespace AIronChef.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RecipeController : ControllerBase
+    public class RecipeController : Controller
     {
         private readonly IMediator _mediator;
         private readonly ILogger<RecipeController> _logger;
-        private readonly IRecipeRepository _recipeRepository;
 
-        public RecipeController(IRecipeRepository recipeRepository, IMediator mediator, ILogger<RecipeController> logger)
+        public RecipeController(IMediator mediator, ILogger<RecipeController> logger)
         {
-            _recipeRepository = recipeRepository;
             _mediator = mediator;
             _logger = logger;
         }
@@ -40,11 +37,11 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var result = await _mediator.Send(new GenerateRecipeCommand(
-                    newRecipe.Ingredients, 
-                    newRecipe.MaxCookingTimeMinutes, 
-                    newRecipe.MealType
-                ));
+                //var result = await _mediator.Send(new GenerateRecipeCommandHandler
+                //{
+                //    Ingredients = newRecipe.Ingredients
+                //});
+                var result = await _mediator.Send(new GenerateRecipeCommand(newRecipe.Ingredients, newRecipe.MaxCookingTimeMinutes, newRecipe.MealType));
 
                 if (result.Data is Recipe generatedRecipe)
                 {
@@ -76,7 +73,7 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var result = await _recipeRepository.GetByIdAsync(id);
+                var result = await _mediator.Send(new GetRecipeQuery(id));
                 if (result == null)
                 {
                     _logger.LogWarning("Recipe with ID {id} not found.", id);
@@ -91,7 +88,6 @@ namespace AIronChef.API.Controllers
                 return StatusCode(500, "An error occurred while fetching the recipe.");
             }
         }
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRecipe(int id, [FromBody, Required] Recipe updatedRecipe)
@@ -150,30 +146,26 @@ namespace AIronChef.API.Controllers
                 _logger.LogError(ex, "An error occurred while deleting the recipe.");
                 return StatusCode(500, "An error occurred while deleting the recipe.");
             }
-
-
-            [HttpGet]
-            public async Task<IActionResult> GetAllRecipes()
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> GetAllRecipes()
+        {
+            _logger.LogInformation("Fetching all recipes.");
+            try
             {
-                _logger.LogInformation("Fetching all recipes.");
-
-                try
+                var result = await _mediator.Send(new GetAllRecipesQuery());
+                if (!result.Success || result.Data is null)
                 {
-                    var result = await _mediator.Send(new GetAllRecipesQuery());
-
-                    if (!result.Success || result.Data is null)
-                    {
-                        _logger.LogWarning("No recipes found.");
-                        return NotFound("No recipes found.");
-                    }
-
-                    return Ok(result.Data);
+                    _logger.LogWarning("No recipes found.");
+                    return NotFound("No recipes found.");
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "An error occurred while fetching all recipes.");
-                    return StatusCode(500, "An error occurred while retrieving recipes.");
-                }
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching all recipes.");
+                return StatusCode(500, "An error occurred while retrieving recipes.");
             }
         }
     }
