@@ -19,14 +19,36 @@ namespace AIronChef.Application.Users.Commands.DeleteUser
 
         public async Task<OperationResult<User>> Handle(DeleteUserCommand command, CancellationToken cancellationToken)
         {
-            bool success = await _repository.DeleteAsync(command.Id);
-            if (!success)
+            if (command.Id <= 0)
             {
-                _loggingService.LogWarning("Invalid id");
-                return OperationResult<User>.Failure("Invalid id");
+                _loggingService.LogWarning("Invalid command: User ID is not valid.");
+                return OperationResult<User>.Failure("Invalid command: User ID is not valid.");
             }
-            _loggingService.LogInfo("User deleted");
-            return OperationResult<User>.Successfull(null!);
+
+            var user = await _repository.GetByIdAsync(command.Id);
+            if (user == null)
+            {
+                _loggingService.LogWarning($"User with ID {command.Id} does not exist.");
+                return OperationResult<User>.Failure($"User with ID {command.Id} does not exist.");
+            }
+
+            try
+            {
+                bool success = await _repository.DeleteAsync(command.Id);
+                if (!success)
+                {
+                    _loggingService.LogWarning("Failed to delete the user.");
+                    return OperationResult<User>.Failure("Failed to delete the user.");
+                }
+
+                _loggingService.LogInfo("User deleted successfully.");
+                return OperationResult<User>.Successfull(null!);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError($"An error occurred while trying to delete the user: {ex.Message}", ex);
+                return OperationResult<User>.Failure("An error occurred while trying to delete the user.");
+            }
         }
     }
 }

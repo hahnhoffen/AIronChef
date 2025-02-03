@@ -16,7 +16,7 @@ namespace AIronChef.Application.Common.Helpers
         {
             Success = false;
             Data = default;
-            ErrorMessage = string.Empty;
+            ErrorMessage = null;
         }
         
         public static OperationResult<T> Successfull(T data)

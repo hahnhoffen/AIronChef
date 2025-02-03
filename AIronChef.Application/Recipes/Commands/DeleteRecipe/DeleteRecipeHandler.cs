@@ -8,10 +8,10 @@ namespace AIronChef.Application.Recipes.Commands.DeleteRecipe
 {
     public class DeleteRecipeHandler : IRequestHandler<DeleteRecipeCommand, OperationResult<Recipe>>
     {
-        private readonly IGenericRepository<Recipe> _recipeRepository;
+        private readonly IRecipeRepository _recipeRepository;
         private readonly ILoggingService _loggingService;
 
-        public DeleteRecipeHandler(IGenericRepository<Recipe> recipeRepository, ILoggingService loggingService)
+        public DeleteRecipeHandler(IRecipeRepository recipeRepository, ILoggingService loggingService)
         {
             _recipeRepository = recipeRepository;
             _loggingService = loggingService;
@@ -19,14 +19,13 @@ namespace AIronChef.Application.Recipes.Commands.DeleteRecipe
 
         public async Task<OperationResult<Recipe>> Handle(DeleteRecipeCommand request, CancellationToken cancellationToken)
         {
-
             if (request == null || !request.IsValid())
             {
                 _loggingService.LogWarning("Invalid command: Recipe ID is not valid.");
                 return OperationResult<Recipe>.Failure("Invalid command: Recipe ID is not valid.");
             }
 
-            var recipe = await _recipeRepository.GetByIdAsync(request.Id)!;
+            var recipe = await _recipeRepository.GetByIdAsync(request.Id);
             if (recipe == null)
             {
                 _loggingService.LogWarning($"Recipe with ID {request.Id} does not exist.");
@@ -35,7 +34,12 @@ namespace AIronChef.Application.Recipes.Commands.DeleteRecipe
 
             try
             {
-                await _recipeRepository.DeleteAsync(request.Id);
+                var deleteSuccess = await _recipeRepository.DeleteAsync(request.Id);
+                if (!deleteSuccess)
+                {
+                     _loggingService.LogError($"An error occurred while deleting the recipe.", new Exception("Fuck around and find out"));
+                    return OperationResult<Recipe>.Failure("Failed to delete the recipe.");
+                }
 
                 _loggingService.LogInfo($"Recipe with ID {request.Id} deleted successfully.");
                 return OperationResult<Recipe>.Successfull(recipe);
@@ -43,7 +47,7 @@ namespace AIronChef.Application.Recipes.Commands.DeleteRecipe
             catch (Exception ex)
             {
                 _loggingService.LogError($"An error occurred while deleting the recipe.", ex);
-                return OperationResult<Recipe>.Failure($"An error occurred while deleting the recipe: {ex.Message}");                
+                return OperationResult<Recipe>.Failure($"An error occurred while deleting the recipe: {ex.Message}");
             }
         }
     }
