@@ -28,8 +28,10 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
                 return OperationResult<User>.Failure("User not found");
             }
 
+            bool samePassword = PasswordHasher.VerifyPassword(command.Password, existingUser);
+
             // If no changes are made, return success with the existing user
-            if (existingUser.Email == command.Email && existingUser.Name == command.Name)
+            if (existingUser.Email == command.Email && existingUser.Name == command.Name && samePassword)
             {
                 return OperationResult<User>.Successfull(existingUser);
             }
@@ -47,6 +49,13 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
             // Update only the changed fields
             existingUser.Name = command.Name;
             existingUser.Email = command.Email;
+            if (!samePassword)
+            {
+                var salt = PasswordHasher.GenerateSalt();
+                var passwordHash = PasswordHasher.HashPassword(command.Password, salt);
+                existingUser.PasswordSalt = salt;
+                existingUser.PasswordHash = passwordHash;
+            }
 
             User updatedUser = await _repository.UpdateAsync(existingUser);
     

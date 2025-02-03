@@ -102,7 +102,7 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var operationResult = await _mediator.Send(new UpdateUserCommand(id, updatedUser.Name, updatedUser.Email));
+                var operationResult = await _mediator.Send(new UpdateUserCommand(id, updatedUser.Name, updatedUser.Email, updatedUser.Password));
 
                 if (!operationResult.Success)
                 {
