@@ -14,6 +14,38 @@ namespace AIronChef.Application.Common.Helpers
             if(string.IsNullOrWhiteSpace(email))
                 return false;
 
+            int atPos = email.IndexOf('@');
+            if (atPos <= 0)
+                return false;
+            // local part should be max 64 characters
+            if (atPos > 64)
+                return false;
+            // local part cannot start with .
+            if (email[0] == '.')
+                return false;
+            // local part cannot end with .
+            if (email[atPos - 1] == '.')
+                return false;
+            // local part cannot have two consecutive .'s, probably not domain either
+            if (email.IndexOf("..") >= 0)
+                return false;
+            if (email.IndexOf('"') >= 0)
+            {
+                if (email[0] == '"' && email[atPos - 1] == '"')
+                {
+                    // quoted local part should be fine
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            // Top level domain should be minimum 2 characters
+            if (email.LastIndexOf('.') > email.Length - 3)
+            {
+                return false;
+            }
+
             try
             {
                 var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
