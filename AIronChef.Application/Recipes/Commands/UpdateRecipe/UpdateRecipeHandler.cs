@@ -1,4 +1,5 @@
 ﻿using AIronChef.Application.Common.Helpers;
+using AIronChef.Application.Interfaces;
 using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
 using MediatR;
@@ -13,10 +14,12 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
     public class UpdateRecipeHandler : IRequestHandler<UpdateRecipeCommand, OperationResult<Recipe>>
     {
         private readonly IGenericRepository<Recipe> _recipeRepository;
+        private readonly ILoggingService _loggingService;
 
-        public UpdateRecipeHandler(IGenericRepository<Recipe> recipeRepository)
+        public UpdateRecipeHandler(IGenericRepository<Recipe> recipeRepository, ILoggingService loggingService)
         {
             _recipeRepository = recipeRepository;
+            _loggingService = loggingService;
         }
 
         public async Task<OperationResult<Recipe>> Handle(UpdateRecipeCommand request, CancellationToken cancellationToken)
@@ -30,6 +33,7 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
 
             if (recipe == null)
             {
+                _loggingService.LogWarning($"Recipe with ID {request.Id} does not exist.");
                 return OperationResult<Recipe>.Failure($"Recipe with ID {request.Id} does not exist.");
             }
 
@@ -40,10 +44,12 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
             try
             {
                 await _recipeRepository.UpdateAsync(recipe)!;
+                _loggingService.LogInfo($"Recipe with ID {request.Id} has been updated successfully.");
                 return OperationResult<Recipe>.Successfull(recipe);
             }
             catch (Exception ex)
             {
+                _loggingService.LogWarning($"An error occurred while updating the recipe: {ex.Message}");
                 return OperationResult<Recipe>.Failure($"An error occurred while updating the recipe: {ex.Message}");
             }
         }
