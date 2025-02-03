@@ -1,12 +1,13 @@
-﻿using AIronChef.Application.Users.Commands.AddUser;
+﻿using AIronChef.Application.DTOs;
+using AIronChef.Application.Users.Commands.AddUser;
 using AIronChef.Application.Users.Commands.UpdateUser;
 using AIronChef.Application.Users.Commands.DeleteUser;
-using AIronChef.Domain.Models;
+using AIronChef.Application.Users.Queries.GetUser;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using AIronChef.Application.Users.Queries.GetUser;
+using AIronChef.Application.Users.Queries.GetAllUsers;
 
 namespace AIronChef.API.Controllers
 {
@@ -14,7 +15,6 @@ namespace AIronChef.API.Controllers
     [ApiController]
     public class UserController : Controller
     {
-
         private readonly IMediator _mediator;
         private readonly ILogger<UserController> _logger;
 
@@ -25,7 +25,7 @@ namespace AIronChef.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody, Required] User newUser)
+        public async Task<IActionResult> Register([FromBody, Required] UserDto newUser)
         {
             if (!ModelState.IsValid)
             {
@@ -34,14 +34,10 @@ namespace AIronChef.API.Controllers
             }
 
             _logger.LogInformation("Adding new user {username}", newUser.Name);
+
             try
             {
-                var result = await _mediator.Send(new AddUserCommand
-                {
-                    Name = newUser.Name,
-                    Email = newUser.Email,
-                    Password = newUser.PasswordHash
-                });
+                var result = await _mediator.Send(new AddUserCommand(newUser.Name, newUser.Email, newUser.Password));
 
                 if (result.Success)
                 {
@@ -51,7 +47,7 @@ namespace AIronChef.API.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning("New user OperationResult failure: {message}", result.ErrorMessage);
+                    _logger.LogWarning("User creation failed: {message}", result.ErrorMessage);
                     return BadRequest(result.ErrorMessage);
                 }
             }
@@ -62,63 +58,65 @@ namespace AIronChef.API.Controllers
             }
         }
 
-
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById(int id)
         {
+            if (id <= 0)
+            {
+                _logger.LogWarning("Invalid user ID.");
+                return BadRequest("Invalid user ID.");
+            }
+
+            _logger.LogInformation("Fetching user with ID: {id}", id);
+
             try
             {
                 var operationResult = await _mediator.Send(new GetUserQuery(id));
                 if (!operationResult.Success)
                 {
-                    _logger.LogWarning("User not found");
+                    _logger.LogWarning("User not found.");
                     return NotFound("User not found.");
                 }
 
-                _logger.LogInformation("Successfully retrieved the user!");
+                _logger.LogInformation("Successfully retrieved user {id}", id);
                 return Ok(operationResult);
             }
-
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching");
+                _logger.LogError(ex, "An error occurred while fetching the user.");
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
 
         [Authorize]
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateUser([FromBody, Required] User user)
+        [HttpPut("{id:int}")] // Fixed incorrect `id:guid`
+        public async Task<IActionResult> UpdateUser(int id, [FromBody, Required] UserDto updatedUser)
         {
-            _logger.LogInformation("Updating User {username}", user.Name);
+            if (!ModelState.IsValid || id <= 0)
+            {
+                _logger.LogWarning("Invalid user data or ID.");
+                return BadRequest(ModelState);
+            }
+
+            _logger.LogInformation("Updating user {id}", id);
+
             try
             {
-                var operationResult = await _mediator.Send(new UpdateUserCommand
+                var operationResult = await _mediator.Send(new UpdateUserCommand(id, updatedUser.Name, updatedUser.Email));
+
+                if (!operationResult.Success)
                 {
-                    Id = user.Id,
-                    Name = user.Name,
-                    Email = user.Email,
-                });
-                if (operationResult == null)
-                {
-                    _logger.LogWarning("User not found");
-                    return NotFound("User not found.");
-                }
-                if (operationResult.Success)
-                {
-                    _logger.LogInformation("User {username} updated successfully", operationResult.Data.Name);
-                    return Ok(operationResult.Data);
-                }
-                else
-                {
-                    _logger.LogWarning("Update user failure: {message}", operationResult.ErrorMessage);
+                    _logger.LogWarning("Update failed: {message}", operationResult.ErrorMessage);
                     return BadRequest(operationResult.ErrorMessage);
                 }
+
+                _logger.LogInformation("User {id} updated successfully", id);
+                return Ok(operationResult.Data);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while updating User");
-                return StatusCode(500, "An error occurred while updating User.");
+                _logger.LogError(ex, "An error occurred while updating the user.");
+                return StatusCode(500, "An error occurred while updating the user.");
             }
         }
 
@@ -126,46 +124,55 @@ namespace AIronChef.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            /*
-            if (id == Guid.Empty)
+            if (id <= 0)
             {
-                _logger.LogWarning("Invalid input data");
-                return BadRequest("Invalid input data.");
+                _logger.LogWarning("Invalid user ID.");
+                return BadRequest("Invalid user ID.");
             }
-            */
+
             try
             {
-                var operationResult = await _mediator.Send(new DeleteUserCommand { Id = id });
-                if (operationResult.Success)
+                var operationResult = await _mediator.Send(new DeleteUserCommand(id));
+
+                if (!operationResult.Success)
                 {
-                    _logger.LogInformation("User {id} deleted successfully", id);
-                    return Ok(operationResult.Data);
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to delete user. OperationResult failure: {message}", operationResult.ErrorMessage);
+                    _logger.LogWarning("Failed to delete user {id}: {message}", id, operationResult.ErrorMessage);
                     return BadRequest(operationResult.ErrorMessage);
                 }
+
+                _logger.LogInformation("User {id} deleted successfully", id);
+                return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while deleting User");
-                return StatusCode(500, "An error occurred while deleting User.");
+                _logger.LogError(ex, "An error occurred while deleting the user.");
+                return StatusCode(500, "An error occurred while deleting the user.");
             }
         }
 
-
-        /*[HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] User userWantingToLogIn)
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
         {
-            var userDto = new UserDto
+            _logger.LogInformation("Fetching all users.");
+
+            try
             {
-                UserName = userWantingToLogIn.UserName,
-                Password = userWantingToLogIn.Password
-                // Map other properties as needed
-            };
-            return Ok(await _mediator.Send(new LoginUserQuery(userDto)));
-        }*/
+                var operationResult = await _mediator.Send(new GetAllUsersQuery());
+
+                if (!operationResult.Success)
+                {
+                    _logger.LogWarning("No users found.");
+                    return NotFound("No users found.");
+                }
+
+                _logger.LogInformation("Successfully retrieved all users.");
+                return Ok(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching users.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
     }
 }

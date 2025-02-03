@@ -7,6 +7,7 @@ using AIronChef.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using AIronChef.Application.Recipes.Queries.GetAllRecipes;
 
 namespace AIronChef.API.Controllers
 {
@@ -146,6 +147,26 @@ namespace AIronChef.API.Controllers
                 return StatusCode(500, "An error occurred while deleting the recipe.");
             }
         }
+        
+        [HttpGet]
+        public async Task<IActionResult> GetAllRecipes()
+        {
+            _logger.LogInformation("Fetching all recipes.");
+            try
+            {
+                var result = await _mediator.Send(new GetAllRecipesQuery());
+                if (!result.Success || result.Data is null)
+                {
+                    _logger.LogWarning("No recipes found.");
+                    return NotFound("No recipes found.");
+                }
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching all recipes.");
+                return StatusCode(500, "An error occurred while retrieving recipes.");
+            }
+        }
     }
 }
-

@@ -6,6 +6,11 @@ namespace AIronChef.Application.Users.Commands.DeleteUser
 {
     public class DeleteUserCommand : IRequest<OperationResult<User>>
     {
-        public int Id;
+        public int Id { get; }
+
+        public DeleteUserCommand(int id)
+        {
+            Id = id;
+        }
     }
 }

@@ -25,6 +25,10 @@ namespace AIronChef.Infrastructure.Services
 
             if (string.IsNullOrEmpty(_apiKey))
                 throw new InvalidOperationException("No API key found");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            _httpClient.BaseAddress ??= new Uri("https://api.openai.com/v1/");
+            _logger.LogInformation("HttpClient BaseAddress: {BaseAddress}", _httpClient.BaseAddress);
         }
 
         /// <summary>
@@ -37,7 +41,7 @@ namespace AIronChef.Infrastructure.Services
         public async Task<Recipe>? GenerateRecipeAsync(IEnumerable<string> ingredients, MealType mealType, int? maxCookingTime)
         {
             // Validate user input.
-            if (ingredients == null || ingredients.Count() == 0)
+            if (ingredients == null || !ingredients.Any())
             {
                 _logger.LogWarning("Invalid input: No ingredients provided.");
                 return null!;
@@ -57,7 +61,7 @@ namespace AIronChef.Infrastructure.Services
                              $"- Maximum Cooking Time: {maxCookingTime} minutes";
 
 
-            string url = "https://api.openai.com/v1/chat/completions";
+            string endpoint = "chat/completions";
 
             // Define Polly Retry Policy
             AsyncRetryPolicy<HttpResponseMessage> retryPolicy = Policy
@@ -84,7 +88,7 @@ namespace AIronChef.Infrastructure.Services
                 // Execute the HTTP request with the retry policy
                 HttpResponseMessage response = await retryPolicy.ExecuteAsync(async () =>
                 {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+                    //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
 
                     var requestPayload = new
                     {
@@ -104,7 +108,7 @@ namespace AIronChef.Infrastructure.Services
                         Encoding.UTF8,
                         "application/json");
 
-                    return await _httpClient.PostAsync(url, requestContent);
+                    return await _httpClient.PostAsync(endpoint, requestContent);
                 });
 
                 // Handle response
