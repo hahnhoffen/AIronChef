@@ -3,11 +3,6 @@ using AIronChef.Application.Users.Queries.GetUser;
 using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
 using FakeItEasy;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
 {
@@ -27,57 +22,76 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         }
 
         [Test]
-        public async Task Handle_Existing_User_Return_Sucess()
+        public async Task Handle_Existing_User_Returns_Success()
         {
+            // Arrange
             var userId = 1;
             var user = new User { Id = userId, Name = "Test User", Email = "Test@gmail.com" };
-            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Returns(user);
+
+            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Returns(Task.FromResult(user));
 
             var query = new GetUserQuery(userId);
 
+            // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
+            // Assert
             Assert.IsTrue(result.Success);
             Assert.AreEqual(user, result.Data);
+            Assert.IsNull(result.ErrorMessage);
         }
 
         [Test]
         public async Task Handle_NonExistentUser_ReturnsFailure()
         {
-            int invalidId = -1;
-            A.CallTo(() => _userRepository.GetByIdAsync(invalidId)).Returns(Task.FromResult<User>(null));
+            // Arrange
+            int nonExistentUserId = 9999; // Change from -1 to valid ID to match behavior
 
-            var query = new GetUserQuery(invalidId);
+            A.CallTo(() => _userRepository.GetByIdAsync(nonExistentUserId)).Returns(Task.FromResult<User>(null));
 
+            var query = new GetUserQuery(nonExistentUserId);
+
+            // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
+            // Assert
             Assert.IsFalse(result.Success);
             Assert.AreEqual("User not found.", result.ErrorMessage);
+            Assert.IsNull(result.Data);
         }
 
         [Test]
         public async Task Handle_InvalidId_ReturnsFailure()
         {
+            // Arrange
             var query = new GetUserQuery(0);
 
+            // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
+            // Assert
             Assert.IsFalse(result.Success);
             Assert.AreEqual("Id must be greater than zero.", result.ErrorMessage);
+            Assert.IsNull(result.Data);
         }
 
         [Test]
         public async Task Handle_RepositoryThrowsException_ReturnsFailure()
         {
+            // Arrange
             var userId = 2;
-            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Throws<Exception>();
+
+            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Throws(new Exception("Database error"));
 
             var query = new GetUserQuery(userId);
 
+            // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
+            // Assert
             Assert.IsFalse(result.Success);
             Assert.AreEqual("Something went wrong.", result.ErrorMessage);
+            Assert.IsNull(result.Data);
         }
     }
 }

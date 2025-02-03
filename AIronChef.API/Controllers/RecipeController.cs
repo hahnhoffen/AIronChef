@@ -7,18 +7,21 @@ using AIronChef.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using AIronChef.Domain.Interfaces;
 
 namespace AIronChef.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RecipeController : Controller
+    public class RecipeController : ControllerBase
     {
         private readonly IMediator _mediator;
         private readonly ILogger<RecipeController> _logger;
+        private readonly IRecipeRepository _recipeRepository;
 
-        public RecipeController(IMediator mediator, ILogger<RecipeController> logger)
+        public RecipeController(IRecipeRepository recipeRepository, IMediator mediator, ILogger<RecipeController> logger)
         {
+            _recipeRepository = recipeRepository;
             _mediator = mediator;
             _logger = logger;
         }
@@ -36,11 +39,11 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                //var result = await _mediator.Send(new GenerateRecipeCommandHandler
-                //{
-                //    Ingredients = newRecipe.Ingredients
-                //});
-                var result = await _mediator.Send(new GenerateRecipeCommand(newRecipe.Ingredients, newRecipe.MaxCookingTimeMinutes, newRecipe.MealType));
+                var result = await _mediator.Send(new GenerateRecipeCommand(
+                    newRecipe.Ingredients, 
+                    newRecipe.MaxCookingTimeMinutes, 
+                    newRecipe.MealType
+                ));
 
                 if (result.Data is Recipe generatedRecipe)
                 {
@@ -72,7 +75,7 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                var result = await _mediator.Send(new GetRecipeQuery(id));
+                var result = await _recipeRepository.GetByIdAsync(id);
                 if (result == null)
                 {
                     _logger.LogWarning("Recipe with ID {id} not found.", id);
@@ -87,6 +90,7 @@ namespace AIronChef.API.Controllers
                 return StatusCode(500, "An error occurred while fetching the recipe.");
             }
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRecipe(int id, [FromBody, Required] Recipe updatedRecipe)
@@ -148,4 +152,3 @@ namespace AIronChef.API.Controllers
         }
     }
 }
-
