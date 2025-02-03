@@ -2,27 +2,35 @@
 using MediatR;
 using AIronChef.Domain.Models;
 using AIronChef.Domain.Interfaces;
+using AIronChef.Application.Interfaces;
 
 namespace AIronChef.Application.Users.Commands.UpdateUser
 {
-    internal class UpdateUserHandler : IRequestHandler<UpdateUserCommand, OperationResult<User>>
+    public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, OperationResult<User>>
     {
         private readonly IUserRepository _repository;
+        private readonly ILoggingService _loggingService;
 
-        public UpdateUserHandler(IUserRepository repository)
+        public UpdateUserHandler(IUserRepository repository, ILoggingService loggingService)
         {
             _repository = repository;
+            _loggingService = loggingService;
         }
 
         public async Task<OperationResult<User>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
         {
+            _loggingService.LogInfo($"Updating user with id: {command.Id}");
             if (string.IsNullOrWhiteSpace(command.Name))
             {
                 return OperationResult<User>.Failure("The new User's name cannot be empty.");
             }
+            if (!ValidationHelper.IsValidEmail(command.Email))
+            {
+                return OperationResult<User>.Failure("Invalid email.");
+            }
 
             // Retrieve existing user from the repository
-            User existingUser = await _repository.GetByIdAsync(command.Id);
+            var existingUser = await _repository.GetByIdAsync(command.Id)!;
             if (existingUser == null)
             {
                 return OperationResult<User>.Failure("User not found");
@@ -48,9 +56,16 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
             existingUser.Name = command.Name;
             existingUser.Email = command.Email;
 
-            User updatedUser = await _repository.UpdateAsync(existingUser);
-    
-            return OperationResult<User>.Successfull(updatedUser);
+            try
+            {
+                User updatedUser = await _repository.UpdateAsync(existingUser)!;
+
+                return OperationResult<User>.Successfull(updatedUser);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<User>.Failure($"An error occurred while updating the user: {ex.Message}");
+            }
         }
 
     }
