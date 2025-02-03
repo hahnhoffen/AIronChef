@@ -40,7 +40,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task Valid_AddsUser(string validEmail)
         {
             // Arrange
-            var command = new AddUserCommand { Name = "Name", Email = validEmail, Password = "Password" };
+            var command = new AddUserCommand("Name", validEmail, "Password");
 
             var fakeRepository = CreateFakeRepository();
 
@@ -62,7 +62,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task NotUniqueEmail_ShouldFail()
         {
             // Arrange
-            var command = new AddUserCommand { Name = "Name", Email = "a@b.com", Password = "Password" };
+            var command = new AddUserCommand("Name", "a@b.com", "Password");
 
             var fakeRepository = CreateFakeRepository();
             A.CallTo(() => fakeRepository.IsEmailUniqueAsync(command.Email)).Returns(Task.FromResult(false));
@@ -96,7 +96,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task InvalidEmail_ShouldFail(string invalidEmail)
         {
             // Arrange
-            var command = new AddUserCommand { Name = "Name", Email = invalidEmail, Password = "Password" };
+            var command = new AddUserCommand("Name", invalidEmail, "Password");
 
             var fakeRepository = CreateFakeRepository();
             A.CallTo(() => fakeRepository.IsEmailUniqueAsync(command.Email)).Returns(Task.FromResult(true));
@@ -113,7 +113,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         public async Task InvalidName_ShouldFail()
         {
             // Arrange
-            var command = new AddUserCommand { Name = "", Email = "a@b.com", Password = "Password" };
+            var command = new AddUserCommand("", "a@b.com", "Password");
 
             var fakeRepository = CreateFakeRepository();
             A.CallTo(() => fakeRepository.IsEmailUniqueAsync(command.Email)).Returns(Task.FromResult(true));
