@@ -14,6 +14,12 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         _context = context;
     }
 
+    public async Task<User> GetUserByEmail(string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        return user!;
+    }
+
     public async Task<bool> IsEmailUniqueAsync(string email)
     {
         return !await _context.Users.AnyAsync(user => user.Email == email);

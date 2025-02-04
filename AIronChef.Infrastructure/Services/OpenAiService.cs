@@ -99,7 +99,7 @@ namespace AIronChef.Infrastructure.Services
                             new { role = "user", content = userPrompt }
                         },
                         temperature = 0,
-                        max_tokens = 300,
+                        //max_tokens = 300,
                         response_format = new { type = "json_object" }
                     };
 
@@ -116,7 +116,7 @@ namespace AIronChef.Infrastructure.Services
                 {
                     string responseString = await response.Content.ReadAsStringAsync();
                     var responseJson = JsonDocument.Parse(responseString);
-
+                    _logger.LogInformation(responseString);
                     var rawContent = responseJson.RootElement
                         .GetProperty("choices")[0]
                         .GetProperty("message")
@@ -127,7 +127,7 @@ namespace AIronChef.Infrastructure.Services
                     {
                         PropertyNameCaseInsensitive = true,
                     };
-
+                    _logger.LogInformation(rawContent);
                     var recipeData = JsonSerializer.Deserialize<RecipeResponse>(rawContent, options);
 
                     if (recipeData is null || string.IsNullOrWhiteSpace(recipeData.Name))
@@ -165,8 +165,8 @@ namespace AIronChef.Infrastructure.Services
         {
             public string? Name { get; set; }
             public string? Description { get; set; }
-            public ICollection<string> Ingredients { get; set; } = new List<string>();
-            public ICollection<string> Instructions { get; set; } = new List<string>();
+            public List<string> Ingredients { get; set; } = new List<string>();
+            public List<string> Instructions { get; set; } = new List<string>();
         }
     }
 }

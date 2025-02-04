@@ -7,6 +7,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using AIronChef.Application.Users.Queries.Login;
+using AIronChef.Domain.Enums;
+using System.Security.Claims;
 using AIronChef.Application.Users.Queries.GetAllUsers;
 
 namespace AIronChef.API.Controllers
@@ -25,6 +28,7 @@ namespace AIronChef.API.Controllers
         }
 
         [HttpPost]
+        [Route("register")]
         public async Task<IActionResult> Register([FromBody, Required] UserDto newUser)
         {
             if (!ModelState.IsValid)
@@ -58,6 +62,7 @@ namespace AIronChef.API.Controllers
             }
         }
 
+        [Authorize(Roles = nameof(UserRole.Admin) + "," + nameof(UserRole.User))]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById(int id)
         {
@@ -65,6 +70,22 @@ namespace AIronChef.API.Controllers
             {
                 _logger.LogWarning("Invalid user ID.");
                 return BadRequest("Invalid user ID.");
+            }
+
+            var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var loggedInUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            int loggedInId = int.Parse(loggedInUserId);
+
+            if (loggedInUserRole != nameof(UserRole.Admin) && loggedInId != id)
+            {
+                _logger.LogWarning("User {loggedInId} attempted to access another user's profile {id}.", loggedInId, id);
+                return Forbid("You can only access your own profile.");
             }
 
             _logger.LogInformation("Fetching user with ID: {id}", id);
@@ -88,7 +109,7 @@ namespace AIronChef.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = nameof(UserRole.Admin) + "," + nameof(UserRole.User))]
         [HttpPut("{id:int}")] // Fixed incorrect `id:guid`
         public async Task<IActionResult> UpdateUser(int id, [FromBody, Required] UserDto updatedUser)
         {
@@ -96,6 +117,22 @@ namespace AIronChef.API.Controllers
             {
                 _logger.LogWarning("Invalid user data or ID.");
                 return BadRequest(ModelState);
+            }
+
+            var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var loggedInUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            int loggedInId = int.Parse(loggedInUserId);
+
+            if (loggedInUserRole != nameof(UserRole.Admin) && loggedInId != id)
+            {
+                _logger.LogWarning("User {loggedInId} attempted to update another user's profile {id}.", loggedInId, id);
+                return Forbid("You can only update your own profile.");
             }
 
             _logger.LogInformation("Updating user {id}", id);
@@ -120,7 +157,7 @@ namespace AIronChef.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = nameof(UserRole.Admin) + "," + nameof(UserRole.User))]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -129,6 +166,24 @@ namespace AIronChef.API.Controllers
                 _logger.LogWarning("Invalid user ID.");
                 return BadRequest("Invalid user ID.");
             }
+
+            var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var loggedInUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            int loggedInId = int.Parse(loggedInUserId);
+
+            if (loggedInUserRole != nameof(UserRole.Admin) && loggedInId != id)
+            {
+                _logger.LogWarning("User {loggedInId} attempted to delete another user's profile {id}.", loggedInId, id);
+                return Forbid("You can only delete your own profile.");
+            }
+
+            _logger.LogInformation("Deleting user with id: {UserId}.", id);
 
             try
             {
@@ -150,6 +205,32 @@ namespace AIronChef.API.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserDto loginUser)
+        {
+            var result = await _mediator.Send(new LoginUserQuery(loginUser));
+            
+            if (!result.Success)
+            {
+                _logger.LogWarning("Something bad happened.");
+                return Unauthorized();
+            }
+
+            var (user, token) = result.Data;
+            return Ok(new
+            {
+                Message = "Login successful",
+                User = new
+                {
+                    user.Id,
+                    user.Name,
+                    user.Email
+                },
+                Token = token
+            });
+        }
+        
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {

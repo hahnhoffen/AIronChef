@@ -10,11 +10,13 @@ public class GetUserHandler : IRequestHandler<GetUserQuery, OperationResult<User
 {
     private readonly IUserRepository _userRepository;
     private readonly ILoggingService _loggingService;
+    private readonly IRecipeRepository _recipeRepository;
 
-    public GetUserHandler(IUserRepository userRepository, ILoggingService loggingService)
+    public GetUserHandler(IUserRepository userRepository, ILoggingService loggingService, IRecipeRepository recipeRepository)
     {
         _userRepository = userRepository;
         _loggingService = loggingService;
+        _recipeRepository = recipeRepository;
     }
 
     public async Task<OperationResult<User>> Handle(GetUserQuery request, CancellationToken cancellationToken)
@@ -36,6 +38,8 @@ public class GetUserHandler : IRequestHandler<GetUserQuery, OperationResult<User
                 _loggingService.LogWarning($"User with id {request.Id} not found.");
                 return OperationResult<User>.Failure("User not found.");
             }
+
+            await _recipeRepository.GetUserRecipes(user.Id, user.Recipes!)!;
 
             _loggingService.LogInfo($"Successfully fetched user with id: {request.Id}");
             return OperationResult<User>.Successfull(user);

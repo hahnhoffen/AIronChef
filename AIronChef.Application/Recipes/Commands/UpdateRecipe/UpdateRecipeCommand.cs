@@ -16,7 +16,7 @@ namespace AIronChef.Application.Recipes.Commands.UpdateRecipe
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Ingredients are required.")]
-        public ICollection<string> Ingredients { get; set; }
+        public List<string> Ingredients { get; set; }
 
         public UpdateRecipeCommand(Recipe recipe)
         {
