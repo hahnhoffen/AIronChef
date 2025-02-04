@@ -1,83 +1,97 @@
-﻿//using AIronChef.Application.Interfaces;
-//using AIronChef.Application.Users.Queries.GetUser;
-//using AIronChef.Domain.Interfaces;
-//using AIronChef.Domain.Models;
-//using FakeItEasy;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
+﻿using AIronChef.Application.Interfaces;
+using AIronChef.Application.Users.Queries.GetUser;
+using AIronChef.Domain.Interfaces;
+using AIronChef.Domain.Models;
+using FakeItEasy;
 
-//namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
-//{
-//    [TestFixture]
-//    public class GetUserHandlerTests
-//    {
-//        private IUserRepository _userRepository;
-//        private ILoggingService _loggingService;
-//        private GetUserHandler _handler;
+namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
+{
+    [TestFixture]
+    public class GetUserHandlerTests
+    {
+        private IUserRepository _userRepository;
+        private ILoggingService _loggingService;
+        private GetUserHandler _handler;
 
-//        [SetUp]
-//        public void SetUp()
-//        {
-//            _userRepository = A.Fake<IUserRepository>();
-//            _loggingService = A.Fake<ILoggingService>();
-//            _handler = new GetUserHandler(_userRepository, _loggingService);
-//        }
+        [SetUp]
+        public void SetUp()
+        {
+            _userRepository = A.Fake<IUserRepository>();
+            _loggingService = A.Fake<ILoggingService>();
+            _handler = new GetUserHandler(_userRepository, _loggingService);
+        }
 
-//        [Test]
-//        public async Task Handle_Existing_User_Return_Sucess()
-//        {
-//            var userId = 1;
-//            var user = new User { Id = userId, Name = "Test User", Email = "Test@gmail.com" };
-//            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Returns(user);
+        [Test]
+        public async Task Handle_Existing_User_Returns_Success()
+        {
+            // Arrange
+            var userId = 1;
+            var user = new User { Id = userId, Name = "Test User", Email = "Test@gmail.com" };
 
-//            var query = new GetUserQuery(userId);
+            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Returns(Task.FromResult(user));
 
-//            var result = await _handler.Handle(query, CancellationToken.None);
+            var query = new GetUserQuery(userId);
 
-//            Assert.IsTrue(result.Success);
-//            Assert.AreEqual(user, result.Data);
-//        }
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
 
-//        [Test]
-//        public async Task Handle_NonExistentUser_ReturnsFailure()
-//        {
-//            int invalidId = -1;
-//            A.CallTo(() => _userRepository.GetByIdAsync(invalidId)).Returns(Task.FromResult<User>(null));
+            // Assert
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(user, result.Data);
+            Assert.IsNull(result.ErrorMessage);
+        }
 
-//            var query = new GetUserQuery(invalidId);
+        [Test]
+        public async Task Handle_NonExistentUser_ReturnsFailure()
+        {
+            // Arrange
+            int nonExistentUserId = 9999; // Change from -1 to valid ID to match behavior
 
-//            var result = await _handler.Handle(query, CancellationToken.None);
+            A.CallTo(() => _userRepository.GetByIdAsync(nonExistentUserId)).Returns(Task.FromResult<User>(null));
 
-//            Assert.IsFalse(result.Success);
-//            Assert.AreEqual("User not found.", result.ErrorMessage);
-//        }
+            var query = new GetUserQuery(nonExistentUserId);
 
-//        [Test]
-//        public async Task Handle_InvalidId_ReturnsFailure()
-//        {
-//            var query = new GetUserQuery(0);
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
 
-//            var result = await _handler.Handle(query, CancellationToken.None);
+            // Assert
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual("User not found.", result.ErrorMessage);
+            Assert.IsNull(result.Data);
+        }
 
-//            Assert.IsFalse(result.Success);
-//            Assert.AreEqual("Id must be greater than zero.", result.ErrorMessage);
-//        }
+        [Test]
+        public async Task Handle_InvalidId_ReturnsFailure()
+        {
+            // Arrange
+            var query = new GetUserQuery(0);
 
-//        [Test]
-//        public async Task Handle_RepositoryThrowsException_ReturnsFailure()
-//        {
-//            var userId = 2;
-//            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Throws<Exception>();
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
 
-//            var query = new GetUserQuery(userId);
+            // Assert
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual("Id must be greater than zero.", result.ErrorMessage);
+            Assert.IsNull(result.Data);
+        }
 
-//            var result = await _handler.Handle(query, CancellationToken.None);
+        [Test]
+        public async Task Handle_RepositoryThrowsException_ReturnsFailure()
+        {
+            // Arrange
+            var userId = 2;
 
-//            Assert.IsFalse(result.Success);
-//            Assert.AreEqual("Something went wrong.", result.ErrorMessage);
-//        }
-//    }
-//}
+            A.CallTo(() => _userRepository.GetByIdAsync(userId)).Throws(new Exception("Database error"));
+
+            var query = new GetUserQuery(userId);
+
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual("Something went wrong.", result.ErrorMessage);
+            Assert.IsNull(result.Data);
+        }
+    }
+}

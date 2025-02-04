@@ -1,8 +1,10 @@
-﻿using AIronChef.Domain.Models;
+using AIronChef.Domain.Models;
 
-namespace AIronChef.Domain.Interfaces;
-
-public interface IRecipeRepository : IGenericRepository<Recipe>
+namespace AIronChef.Domain.Interfaces
 {
-    Task<ICollection<Recipe>>? GetUserRecipes(int userId, ICollection<Recipe> recipes);
+    public interface IRecipeRepository : IGenericRepository<Recipe>
+    {
+        Task<IEnumerable<Recipe>> GetRecipesByUserIdAsync(int userId);
+        Task<IEnumerable<Recipe>> SearchRecipesAsync(string keyword);
+    }
 }

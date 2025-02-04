@@ -18,6 +18,9 @@ namespace AIronChef.Infrastructure
             services.AddScoped<ILoggingService, LoggingService>();
             services.AddScoped<IGenericRepository<Recipe>, GenericRepository<Recipe>>();
             services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+
             services.AddScoped<IRecipeRepository, RecipeRepository>();
 
             services.AddScoped<IRecipeGenerationService, OpenAiService>();

@@ -1,24 +1,29 @@
-﻿using AIronChef.Domain.Interfaces;
+using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
 using AIronChef.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.ObjectModel;
 
-namespace AIronChef.Infrastructure.Repositories;
-
-public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
+namespace AIronChef.Infrastructure.Repositories
 {
-    private readonly AppDbContext _context;
-
-    public RecipeRepository(AppDbContext context) : base(context)
+    public class RecipeRepository : GenericRepository<Recipe>, IRecipeRepository
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    public async Task<ICollection<Recipe>>? GetUserRecipes(int userId, ICollection<Recipe> recipes)
-    {
-        recipes = await _context.Recipes.Where(r => r.UserId == userId).ToListAsync();
+        public RecipeRepository(AppDbContext context) : base(context)
+        {
+            _context = context;
+        }
 
-        return recipes;
+        public async Task<IEnumerable<Recipe>> GetRecipesByUserIdAsync(int userId)
+        {
+            return await _context.Recipes.Where(r => r.UserId == userId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Recipe>> SearchRecipesAsync(string keyword)
+        {
+            return await _context.Recipes
+                .Where(r => r.Name.Contains(keyword) || r.Description.Contains(keyword))
+                .ToListAsync();
+        }
     }
 }

@@ -27,6 +27,16 @@ namespace AIronChef.Application.Users.Commands.AddUser
             {
                 return OperationResult<User>.Failure("The Password can not be empty");
             }
+            // Check if email contain anything
+            if (string.IsNullOrWhiteSpace(command.Email))
+            {
+                return OperationResult<User>.Failure("The Email is empty");
+            }
+            // Check if email is valid
+            if (ValidationHelper.IsValidEmail(command.Email) == false)
+            {
+                return OperationResult<User>.Failure("The Email does not look valid");
+            }
             if (await _repository.IsEmailUniqueAsync(command.Email) == false)
             {
                 return OperationResult<User>.Failure("The Email already exist");
