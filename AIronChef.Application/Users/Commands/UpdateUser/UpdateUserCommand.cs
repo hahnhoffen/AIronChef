@@ -10,12 +10,14 @@ namespace AIronChef.Application.Users.Commands.UpdateUser
         public int Id { get; }
         public string Name { get; }
         public string Email { get; }
+        public string Password { get; }
 
-        public UpdateUserCommand(int id, string name, string email)
+        public UpdateUserCommand(int id, string name, string email, string password)
         {
             Id = id;
             Name = name;
             Email = email;
+            Password = password;
         }
     }
 }
