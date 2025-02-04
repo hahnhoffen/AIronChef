@@ -1,4 +1,5 @@
 ﻿using AIronChef.Application.Common.Helpers;
+using AIronChef.Domain.Enums;
 using AIronChef.Domain.Interfaces;
 using AIronChef.Domain.Models;
 using MediatR;
@@ -38,11 +39,12 @@ namespace AIronChef.Application.Users.Commands.AddUser
                 Name = command.Name,
                 Email = command.Email,
                 PasswordHash = passwordHash,
-                PasswordSalt = salt
+                PasswordSalt = salt,
+                Role = UserRole.User
             };
             // The caller should handle exceptions of unforeseen errors.
             User user = await _repository.AddAsync(userDTO);
-            return OperationResult<User>.Successfull(user);
+            return OperationResult<User>.Successfull(userDTO);
         }
     }
 }

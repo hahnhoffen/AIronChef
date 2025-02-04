@@ -34,7 +34,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
             A.CallTo(() => _userRepository.DeleteAsync(userId))
                 .Returns(Task.FromResult(true));
 
-            var command = new DeleteUserCommand { Id = userId };
+            var command = new DeleteUserCommand(userId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
@@ -48,7 +48,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
             A.CallTo(() => _userRepository.DeleteAsync(userId))
                 .Returns(false);
 
-            var command = new DeleteUserCommand { Id = userId };
+            var command = new DeleteUserCommand(userId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.False);
@@ -60,7 +60,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         {
             int invalidId = -1;
 
-            var command = new DeleteUserCommand {Id = invalidId};
+            var command = new DeleteUserCommand(invalidId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.False);
@@ -74,7 +74,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
             A.CallTo(() => _userRepository.DeleteAsync(userId))
                 .Throws(new Exception("Database error"));
 
-            var command = new DeleteUserCommand { Id = userId };
+            var command = new DeleteUserCommand(userId);
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.That(result.Success, Is.False);

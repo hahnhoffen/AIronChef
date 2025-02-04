@@ -1,5 +1,7 @@
 using AIronChef.Domain.Common;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AIronChef.Domain.Models
 {
@@ -18,16 +20,32 @@ namespace AIronChef.Domain.Models
         public string? Description { get; set; }
 
         // Ingredients for the recipe as a JSON string or plain text, Required.
-        [Required]
-        public ICollection<string>? Ingredients { get; set; }
+        //[Required]
+        //public string IngredientsJson { get; set; } = "[]";
+        //public string InstructionsJson { get; set; } = "[]";
 
-        public ICollection<string>? Instructions { get; set; }
+        //[NotMapped]
+        //public ICollection<string>? Ingredients
+        //{
+        //    get => JsonConvert.DeserializeObject<List<string>>(IngredientsJson) ?? new List<string>();
+        //    set => IngredientsJson = JsonConvert.SerializeObject(value);
+        //}
+        //[NotMapped]
+        //public ICollection<string>? Instructions
+        //{
+        //    get => JsonConvert.DeserializeObject<List<string>>(InstructionsJson) ?? new List<string>();
+        //    set => InstructionsJson = JsonConvert.SerializeObject(value);
+        //}
+
+        [Required]
+        public List<string>? Ingredients { get; set; }
+        [Required]
+        public List<string>? Instructions { get; set; }
 
         // The timestamp when the recipe was created.
         public DateTime CreatedAt { get; set; }
 
         // Navigation properties
         public int UserId { get; set; }
-        public User? User { get; set; }
     }
 }

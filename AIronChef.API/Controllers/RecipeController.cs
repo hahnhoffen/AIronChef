@@ -3,10 +3,13 @@ using AIronChef.Application.Recipes.Commands.DeleteRecipe;
 using AIronChef.Application.Recipes.Commands.GenerateRecipe;
 using AIronChef.Application.Recipes.Commands.UpdateRecipe;
 using AIronChef.Application.Recipes.Queries.GetRecipe;
+using AIronChef.Domain.Enums;
 using AIronChef.Domain.Models;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace AIronChef.API.Controllers
 {
@@ -23,6 +26,7 @@ namespace AIronChef.API.Controllers
             _logger = logger;
         }
 
+        [Authorize(Roles = nameof(UserRole.User))]
         [HttpPost]
         public async Task<IActionResult> AddRecipe([FromBody, Required] RecipeDto newRecipe)
         {
@@ -36,11 +40,11 @@ namespace AIronChef.API.Controllers
 
             try
             {
-                //var result = await _mediator.Send(new GenerateRecipeCommandHandler
-                //{
-                //    Ingredients = newRecipe.Ingredients
-                //});
-                var result = await _mediator.Send(new GenerateRecipeCommand(newRecipe.Ingredients, newRecipe.MaxCookingTimeMinutes, newRecipe.MealType));
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+                
+                var result = await _mediator.Send(new GenerateRecipeCommand(newRecipe.Ingredients, newRecipe.MaxCookingTimeMinutes, newRecipe.MealType, int.Parse(userId)));
 
                 if (result.Data is Recipe generatedRecipe)
                 {
@@ -88,6 +92,7 @@ namespace AIronChef.API.Controllers
             }
         }
 
+        [Authorize(Roles = nameof(UserRole.Admin) + "," + nameof(UserRole.User))]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRecipe(int id, [FromBody, Required] Recipe updatedRecipe)
         {
@@ -95,6 +100,22 @@ namespace AIronChef.API.Controllers
             {
                 _logger.LogWarning("Invalid recipe data or ID.");
                 return BadRequest(ModelState);
+            }
+
+            var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var loggedInUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            int loggedInId = int.Parse(loggedInUserId);
+
+            if (loggedInUserRole != nameof(UserRole.Admin) && loggedInId != id)
+            {
+                _logger.LogWarning("User {loggedInId} attempted to update another user's recipe {id}.", loggedInId, id);
+                return Forbid("You can only update your own recipes.");
             }
 
             _logger.LogInformation("Updating recipe with ID: {id}", id);
@@ -118,6 +139,7 @@ namespace AIronChef.API.Controllers
             }
         }
 
+        [Authorize(Roles = nameof(UserRole.Admin) + "," + nameof(UserRole.User))]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRecipe(int id)
         {
@@ -125,6 +147,22 @@ namespace AIronChef.API.Controllers
             {
                 _logger.LogWarning("Invalid recipe ID.");
                 return BadRequest("Invalid recipe ID.");
+            }
+
+            var loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var loggedInUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            int loggedInId = int.Parse(loggedInUserId);
+
+            if (loggedInUserRole != nameof(UserRole.Admin) && loggedInId != id)
+            {
+                _logger.LogWarning("User {loggedInId} attempted to delete another user's recipe {id}.", loggedInId, id);
+                return Forbid("You can only delete your own recipes.");
             }
 
             _logger.LogInformation("Deleting recipe with ID: {id}", id);
