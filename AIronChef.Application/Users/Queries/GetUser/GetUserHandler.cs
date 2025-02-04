@@ -39,7 +39,7 @@ public class GetUserHandler : IRequestHandler<GetUserQuery, OperationResult<User
                 return OperationResult<User>.Failure("User not found.");
             }
 
-            await _recipeRepository.GetUserRecipes(user.Id, user.Recipes!)!;
+            await _recipeRepository.GetRecipesByUserIdAsync(user.Id, user.Recipes!)!;
 
             _loggingService.LogInfo($"Successfully fetched user with id: {request.Id}");
             return OperationResult<User>.Successfull(user);

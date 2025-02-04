@@ -14,9 +14,10 @@ namespace AIronChef.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Recipe>> GetRecipesByUserIdAsync(int userId)
+        public async Task<ICollection<Recipe>> GetRecipesByUserIdAsync(int userId, ICollection<Recipe> recipes)
         {
-            return await _context.Recipes.Where(r => r.UserId == userId).ToListAsync();
+            recipes = await _context.Recipes.Where(r => r.UserId == userId).ToListAsync();
+            return recipes;
         }
 
         public async Task<IEnumerable<Recipe>> SearchRecipesAsync(string keyword)

@@ -11,6 +11,7 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
     {
         private IUserRepository _userRepository;
         private ILoggingService _loggingService;
+        private IRecipeRepository _recipeRepository;
         private GetUserHandler _handler;
 
         [SetUp]
@@ -18,7 +19,8 @@ namespace AIronChef.Tests.UnitTests.ApplicationTests.UsersTest
         {
             _userRepository = A.Fake<IUserRepository>();
             _loggingService = A.Fake<ILoggingService>();
-            _handler = new GetUserHandler(_userRepository, _loggingService);
+            _recipeRepository = A.Fake<IRecipeRepository>();
+            _handler = new GetUserHandler(_userRepository, _loggingService, _recipeRepository);
         }
 
         [Test]
